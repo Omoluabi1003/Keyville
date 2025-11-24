@@ -3,7 +3,8 @@ import './globals.css';
 import { Baloo_2 } from 'next/font/google';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
-import { siteMetadata } from '../lib/navigation';
+import InstallPrompt from '../components/InstallPrompt';
+import { brand, siteMetadata } from '../lib/navigation';
 
 const baloo = Baloo_2({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   description: siteMetadata.description,
   openGraph: siteMetadata.openGraph,
   twitter: siteMetadata.twitter,
-  applicationName: 'Keyville by ETL GIS Consulting LLC',
+  applicationName: brand.byline,
   manifest: '/manifest.webmanifest',
   metadataBase: new URL('https://etl-gis.com'),
   themeColor: '#111827'
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={baloo.className}>
       <body>
         <NavBar />
+        <InstallPrompt />
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>

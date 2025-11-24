@@ -1,15 +1,14 @@
 import Link from 'next/link';
-import { routes } from '../lib/navigation';
+import { brand, routes } from '../lib/navigation';
 
 export default function Footer() {
   return (
     <footer className="footer" aria-label="Site footer">
       <div className="footer-grid">
         <div>
-          <h3>ETL GIS Consulting LLC</h3>
-          <p className="small">
-            Writing growth through playful practice, delivered as a trusted education product by ETL GIS Consulting LLC.
-          </p>
+          <h3>{brand.appName}</h3>
+          <p className="small">A project by {brand.organization}.</p>
+          <p className="small">Writing growth through playful practice with privacy-first guardrails.</p>
         </div>
         <div>
           <h4>Sitemap</h4>
@@ -28,7 +27,9 @@ export default function Footer() {
           <p className="small">SIS-friendly exports, privacy-first analytics, SOC2-inspired controls, and clear SLAs.</p>
         </div>
       </div>
-      <p className="small" style={{ marginTop: '1rem' }}>© {new Date().getFullYear()} ETL GIS Consulting LLC</p>
+      <p className="small" style={{ marginTop: '1rem' }}>
+        © {new Date().getFullYear()} {brand.organization} · {brand.appName} project
+      </p>
     </footer>
   );
 }

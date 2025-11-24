@@ -1,6 +1,6 @@
-# Keyville by ETL GIS Consulting LLC
+# KEYVILLE — project by ETL GIS Consulting LLC
 
-Multi-page Next.js web app for Keyville, delivered by ETL GIS Consulting LLC to showcase room-rotation writing practice, teacher workflows, and district readiness.
+Multi-page Next.js web app for KEYVILLE, delivered as a project by ETL GIS Consulting LLC to showcase room-rotation writing practice, teacher workflows, and district readiness.
 
 ## Getting started
 

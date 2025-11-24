@@ -1,3 +1,9 @@
+export const brand = {
+  appName: 'KEYVILLE',
+  organization: 'ETL GIS Consulting LLC',
+  byline: 'KEYVILLE — project by ETL GIS Consulting LLC'
+};
+
 export type RouteConfig = {
   href: string;
   label: string;
@@ -13,21 +19,21 @@ export const routes: RouteConfig[] = [
 ];
 
 export const siteMetadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Writing Growth through Playful Practice',
+  title: `${brand.appName} — project by ${brand.organization} | Writing Growth through Playful Practice`,
   description:
-    'Keyville, built by ETL GIS Consulting LLC, helps students strengthen writing stamina and feedback loops through guided room rotations, dashboards, and secure district workflows.',
+    `${brand.appName}, built as a project by ${brand.organization}, helps students strengthen writing stamina and feedback loops through guided room rotations, dashboards, and secure district workflows.`,
   openGraph: {
-    title: 'Keyville by ETL GIS Consulting LLC | Writing Growth through Playful Practice',
+    title: `${brand.appName} — project by ${brand.organization} | Writing Growth through Playful Practice`,
     description:
-      'Room-rotation writing practice, teacher dashboards, governance-ready privacy and security posture for districts, delivered by ETL GIS Consulting LLC.',
+      `Room-rotation writing practice, teacher dashboards, governance-ready privacy and security posture for districts, delivered as a ${brand.organization} project.`,
     url: 'https://etl-gis.com',
-    siteName: 'ETL GIS Consulting LLC',
+    siteName: `${brand.appName} · ${brand.organization}`,
     type: 'website'
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Keyville by ETL GIS Consulting LLC for districts, teachers, and students',
-    description: 'Interactive writing practice with AI feedback and telemetry built for schools, created by ETL GIS Consulting LLC.'
+    title: `${brand.appName} — project by ${brand.organization} for districts, teachers, and students`,
+    description: `Interactive writing practice with AI feedback and telemetry built for schools, created by ${brand.organization}.`
   }
 };
 

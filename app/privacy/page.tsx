@@ -1,16 +1,17 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { brand } from '../../lib/navigation';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Privacy',
-  description: 'Data handling, retention, and student PII boundaries for Keyville.'
+  title: `${brand.appName} — project by ${brand.organization} | Privacy`,
+  description: `Data handling, retention, and student PII boundaries for ${brand.appName}.`
 };
 
 export default function PrivacyPage() {
   return (
     <div>
-      <h1>Privacy</h1>
+      <h1>{brand.appName} privacy</h1>
       <p className="small">Data minimization, retention, and PII boundaries designed for districts.</p>
 
       <Section title="Data minimization">

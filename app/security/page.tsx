@@ -1,16 +1,17 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { brand } from '../../lib/navigation';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Security',
+  title: `${brand.appName} — project by ${brand.organization} | Security`,
   description: 'Security posture, encryption, hosting, and district readiness.'
 };
 
 export default function SecurityPage() {
   return (
     <div>
-      <h1>Security</h1>
+      <h1>{brand.appName} security</h1>
       <p className="small">District-ready security posture with clear controls.</p>
 
       <Section title="Controls">

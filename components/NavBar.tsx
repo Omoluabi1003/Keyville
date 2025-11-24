@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { routes } from '../lib/navigation';
+import { brand, routes } from '../lib/navigation';
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -16,10 +16,10 @@ export default function NavBar() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <Link
             href="/"
-            aria-label="Go to ETL GIS Consulting LLC home"
+            aria-label={`Go to ${brand.appName} project home by ${brand.organization}`}
             style={{ fontWeight: 800, letterSpacing: '0.02em' }}
           >
-            ETL GIS Consulting LLC
+            {brand.appName} · Project by {brand.organization}
           </Link>
           <ul role="list">
             {routes.map((route) => {

@@ -1,17 +1,17 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
-import { caseStudies } from '../../lib/navigation';
+import { brand, caseStudies } from '../../lib/navigation';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Teacher Mode',
+  title: `${brand.appName} — project by ${brand.organization} | Teacher Mode`,
   description: 'Rotation workflow, rubric overlays, exports, accessibility, and pilot readiness for teachers.'
 };
 
 export default function TeacherPage() {
   return (
     <div>
-      <h1>Teacher mode</h1>
+      <h1>{brand.appName} teacher mode</h1>
       <p className="small">Built for smooth rotations and evidence you can export.</p>
 
       <Section title="Classroom rotation workflow" subtitle="Predictable steps that keep rotations calm">

@@ -1,10 +1,10 @@
 import CTAButton from '../../components/CTAButton';
 import Section from '../../components/Section';
-import { caseStudies, heroStats } from '../../lib/navigation';
+import { brand, caseStudies, heroStats } from '../../lib/navigation';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Landing',
+  title: `${brand.appName} — project by ${brand.organization} | Landing`,
   description: 'Room-rotation writing practice that feels like a game, with simple steps for middle schoolers.'
 };
 
@@ -15,12 +15,12 @@ export default function LandingPage() {
         <div>
           <div className="badge">Made for middle schoolers</div>
           <p className="small" aria-label="Product owner">
-            A product of ETL GIS Consulting LLC
+            {brand.appName} · project by {brand.organization}
           </p>
           <h1>Study with quick quests, not endless tabs</h1>
           <p>
-            Keyville turns writing practice into bite-sized challenges. You pick a quest, write for a few minutes, and get
-            friendly hints that help you try again. It stays simple so you can focus on your story.
+            {brand.appName} turns writing practice into bite-sized challenges. You pick a quest, write for a few minutes, and
+            get friendly hints that help you try again. It stays simple so you can focus on your story.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <CTAButton href="/experience" ariaLabel="Start a practice quest">
@@ -31,8 +31,8 @@ export default function LandingPage() {
             </CTAButton>
           </div>
         </div>
-        <div className="card" aria-label="Highlights">
-          <h3>Why students like Keyville</h3>
+          <div className="card" aria-label="Highlights">
+          <h3>Why students like {brand.appName}</h3>
           <ul role="list" style={{ paddingLeft: '1rem' }}>
             <li>Short, playful prompts feel like levels</li>
             <li>Helpful hints arrive right away</li>
