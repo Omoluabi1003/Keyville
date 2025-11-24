@@ -1,16 +1,17 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { brand } from '../../lib/navigation';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Integrations',
+  title: `${brand.appName} — project by ${brand.organization} | Integrations`,
   description: 'SSO, roster sync, and API overview for quick district onboarding.'
 };
 
 export default function IntegrationsPage() {
   return (
     <div>
-      <h1>Integrations</h1>
+      <h1>{brand.appName} integrations</h1>
       <p className="small">SSO, roster sync, and API endpoints designed to be privacy-first and fast to launch.</p>
 
       <Section title="Identity" subtitle="SSO options that respect district boundaries">

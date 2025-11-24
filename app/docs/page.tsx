@@ -1,16 +1,17 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { brand } from '../../lib/navigation';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Docs',
+  title: `${brand.appName} — project by ${brand.organization} | Docs`,
   description: 'Product documentation hub with setup, classroom tips, and observability instrumentation.'
 };
 
 export default function DocsPage() {
   return (
     <div>
-      <h1>Documentation</h1>
+      <h1>{brand.appName} documentation</h1>
       <p className="small">Quickstart guides and reference material for classrooms and pilots.</p>
 
       <Section title="Setup" subtitle="Get live with SSO, roster sync, and sandbox">

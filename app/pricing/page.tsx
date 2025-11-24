@@ -1,10 +1,11 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { brand } from '../../lib/navigation';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Pricing',
-  description: 'Pilot tiers and district rollout narrative for Keyville.'
+  title: `${brand.appName} — project by ${brand.organization} | Pricing`,
+  description: `Pilot tiers and district rollout narrative for ${brand.appName}.`
 };
 
 const tiers = [
@@ -31,7 +32,7 @@ const tiers = [
 export default function PricingPage() {
   return (
     <div>
-      <h1>Pricing</h1>
+      <h1>{brand.appName} pricing</h1>
       <p className="small">Narratives that make pilots stick and scale smoothly.</p>
 
       <div className="card-grid">

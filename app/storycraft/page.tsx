@@ -1,16 +1,17 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { brand } from '../../lib/navigation';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Storycraft Studio',
+  title: `${brand.appName} — project by ${brand.organization} | Storycraft Studio`,
   description: 'Micro-story studio overview with templates, AI tone coaching, and accessible controls.'
 };
 
 export default function StorycraftPage() {
   return (
     <div>
-      <h1>Storycraft Studio</h1>
+      <h1>{brand.appName} Storycraft Studio</h1>
       <p className="small">Micro-story templates, tone coaching, and revision passes built for middle school writers.</p>
 
       <Section title="Templates" subtitle="Curated rooms that match standards and stamina goals">

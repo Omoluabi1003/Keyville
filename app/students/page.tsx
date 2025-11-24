@@ -1,16 +1,17 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { brand } from '../../lib/navigation';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Students',
+  title: `${brand.appName} — project by ${brand.organization} | Students`,
   description: 'Student journey with practice loops, accessibility-first controls, and AI nudges that build stamina.'
 };
 
 export default function StudentsPage() {
   return (
     <div>
-      <h1>Student journey</h1>
+      <h1>{brand.appName} student journey</h1>
       <p className="small">Guided practice loops keep students on-task while reinforcing writing stamina.</p>
 
       <Section title="Practice loop" subtitle="Three-step writing loop students can finish in under 5 minutes">
