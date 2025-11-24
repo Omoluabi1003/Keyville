@@ -41,6 +41,23 @@ export default function DocsPage() {
         </div>
       </Section>
 
+      <Section title="6th-grade style guide" subtitle="Warm, playful writing for student-facing quests">
+        <div className="card">
+          <h4>Keep the tone cozy</h4>
+          <p className="small">Sound like a friendly guide inviting kids into a quest or clubhouse.</p>
+          <h4>Use everyday words</h4>
+          <p className="small">Pick simple terms; if a new word pops up, add a quick hint in parentheses.</p>
+          <h4>Keep directions short</h4>
+          <p className="small">Write 1–2 crisp sentences so steps feel doable.</p>
+          <h4>Paint gentle pictures</h4>
+          <p className="small">Use calm metaphors like puzzles, teams, or maps instead of harsh ones.</p>
+          <h4>Invite choice</h4>
+          <p className="small">Frame actions as challenges: “Try,” “Pick,” or “See if you can...”</p>
+          <h4>Stay consistent</h4>
+          <p className="small">Reuse clear verbs and nouns so every quest feels familiar.</p>
+        </div>
+      </Section>
+
       <CTAButton href="/about" variant="secondary">
         Learn about the team
       </CTAButton>
