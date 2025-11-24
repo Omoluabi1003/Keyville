@@ -46,6 +46,7 @@ const transitionTitle = document.getElementById('transition-title');
 const transitionBody = document.getElementById('transition-body');
 const transitionProgress = document.getElementById('transition-progress');
 const transitionLabel = document.getElementById('transition-label');
+const transitionClose = document.getElementById('transition-close');
 const toastContainer = document.getElementById('toast-container');
 const progressPercent = document.getElementById('progress-percent');
 const roomMapList = document.getElementById('room-map');
@@ -260,6 +261,7 @@ function showToast(message) {
 }
 
 function showRoom(index) {
+  hideTransition();
   const allowedIndex = Math.min(index, state.currentRoom);
   document.querySelectorAll('.card').forEach((room) => {
     if (room.id.startsWith('room-')) {
@@ -1283,6 +1285,10 @@ function setupEvents() {
     transitionOverlay.addEventListener('click', (event) => {
       if (event.target === transitionOverlay) hideTransition();
     });
+  }
+
+  if (transitionClose) {
+    transitionClose.addEventListener('click', hideTransition);
   }
 
   document.addEventListener('keydown', (event) => {
