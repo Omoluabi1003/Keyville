@@ -4,9 +4,8 @@ A lightweight, browser-based language game for 6th graders: **The Lexicon Detect
 
 ## Play locally
 
-1. Open `docs/index.html` directly in your browser, or run a simple static server:
+1. Open `index.html` directly in your browser (uses the assets in `docs/`), or run a simple static server:
    ```bash
-   cd docs
    python3 -m http.server 8000
    ```
 2. Visit `http://localhost:8000` and continue your saved progress thanks to localStorage.
