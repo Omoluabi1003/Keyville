@@ -47,6 +47,10 @@ const defaultState = {
   currentRoom: 0,
   completed: false,
   answers: {},
+  player: {
+    name: '',
+    team: '',
+  },
 };
 
 const stateKey = 'lexicon-detective-state';
@@ -57,6 +61,10 @@ const progressText = document.getElementById('progress-text');
 const progressHint = document.getElementById('progress-hint');
 const roomStatus = document.getElementById('room-status');
 const statusLine = document.getElementById('status-line');
+const startButton = document.getElementById('start-button');
+const resetButton = document.getElementById('reset-progress');
+const playerNameField = document.getElementById('player-name');
+const playerTeamField = document.getElementById('player-team');
 
 const answerKeys = ['vocab', 'grammar', 'fig', 'synAnt', 'story'];
 
@@ -64,7 +72,13 @@ function loadState() {
   const stored = localStorage.getItem(stateKey);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      return {
+        ...defaultState,
+        ...parsed,
+        answers: parsed.answers || {},
+        player: { ...defaultState.player, ...(parsed.player || {}) },
+      };
     } catch (e) {
       console.warn('Resetting state due to parse error');
     }
@@ -88,6 +102,20 @@ function setFeedback(message, type = 'info') {
   }
 }
 
+function playerGreeting() {
+  const { name, team } = state.player || {};
+  if (name && team) return `${name} (${team})`;
+  if (name) return name;
+  return 'Detective';
+}
+
+function updateStartButtonLabel() {
+  if (!startButton) return;
+  const roomLabel = state.completed ? 'Replay from Room 1' : `Room ${state.currentRoom + 1}`;
+  startButton.textContent = state.completed ? 'Replay the escape' : `Start / Resume: ${roomLabel}`;
+  startButton.ariaLabel = `${startButton.textContent} as ${playerGreeting()}`;
+}
+
 function showRoom(index) {
   const cards = document.querySelectorAll('.card');
   cards.forEach((room, idx) => {
@@ -101,6 +129,7 @@ function showRoom(index) {
   progressText.textContent = `Room ${index + 1} of 5`;
   progressFill.style.width = `${((index + 1) / 5) * 100}%`;
   refreshRoomStatus();
+  updateStartButtonLabel();
   saveState();
 }
 
@@ -291,6 +320,7 @@ function showWin() {
   progressFill.style.width = '100%';
   renderSummary();
   refreshRoomStatus();
+  updateStartButtonLabel();
   saveState();
 }
 
@@ -298,6 +328,10 @@ function renderSummary() {
   const summary = document.getElementById('summary');
   const { answers } = state;
   summary.innerHTML = '';
+  const badge = document.createElement('div');
+  badge.className = 'summary-item';
+  const teamLabel = state.player?.team ? ` — Squad: ${state.player.team}` : '';
+  badge.innerHTML = `<strong>Badge:</strong> ${state.player?.name || '—'}${teamLabel}`;
   const vocab = document.createElement('div');
   vocab.className = 'summary-item';
   vocab.innerHTML = `<strong>Vocabulary Vault:</strong> ${Object.entries(answers.vocab || {})
@@ -327,14 +361,14 @@ function renderSummary() {
   story.className = 'summary-item';
   story.innerHTML = `<strong>Story:</strong> ${answers.story || '—'}`;
 
-  [vocab, grammar, figurative, pairs, story].forEach((item) => summary.appendChild(item));
+  [badge, vocab, grammar, figurative, pairs, story].forEach((item) => summary.appendChild(item));
 }
 
-function restartGame() {
-  state = { ...defaultState };
-  localStorage.removeItem(stateKey);
-  setFeedback('New game started! You are back at Room 1.', 'info');
+function restartGame({ keepPlayer = true } = {}) {
+  const player = keepPlayer ? state.player : { ...defaultState.player };
+  state = { ...defaultState, player };
   document.getElementById('win-screen').classList.add('hidden');
+  setFeedback('Progress cleared. You are back at Room 1.', 'info');
   showRoom(0);
 }
 
@@ -364,18 +398,25 @@ function renderRoomStatus() {
 
 function refreshStatusLine() {
   if (state.completed) {
-    statusLine.textContent = 'All rooms cleared! Claim your CLO badge.';
+    statusLine.textContent = `${playerGreeting()}, all rooms are cleared! Claim your CLO badge.`;
     statusLine.className = 'status-line';
     return;
   }
   const currentRoom = roomMeta[state.currentRoom];
-  statusLine.textContent = `Now playing Room ${state.currentRoom + 1}: ${currentRoom.title} (${currentRoom.tag})`;
+  statusLine.textContent = `${playerGreeting()}, now playing Room ${state.currentRoom + 1}: ${currentRoom.title} (${currentRoom.tag}).`;
   statusLine.className = 'status-line';
 }
 
 function refreshRoomStatus() {
   renderRoomStatus();
   refreshStatusLine();
+}
+
+function hydratePlayerForm() {
+  if (!playerNameField || !playerTeamField) return;
+  playerNameField.value = state.player?.name || '';
+  playerTeamField.value = state.player?.team || '';
+  updateStartButtonLabel();
 }
 
 function hydrateAnswers() {
@@ -411,12 +452,44 @@ function init() {
   populateFigurative();
   setupChoiceHandlers();
   hydrateAnswers();
+  hydratePlayerForm();
   refreshRoomStatus();
   if (state.completed) {
     showWin();
   } else {
     showRoom(state.currentRoom);
   }
+
+  document.getElementById('profile-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = playerNameField.value.trim();
+    const team = playerTeamField.value.trim();
+    if (!name) {
+      setFeedback('Add a code name to personalize your badge.', 'error');
+      playerNameField.focus();
+      return;
+    }
+    state.player = { name, team };
+    setFeedback(`Badge saved! Welcome, ${playerGreeting()}.`, 'success');
+    refreshStatusLine();
+    updateStartButtonLabel();
+    saveState();
+  });
+
+  startButton.addEventListener('click', () => {
+    if (state.completed) {
+      showWin();
+    } else {
+      showRoom(state.currentRoom);
+    }
+    const targetId = state.completed ? 'win-screen' : `room-${state.currentRoom}`;
+    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  resetButton.addEventListener('click', () => {
+    restartGame({ keepPlayer: true });
+    updateStartButtonLabel();
+  });
 
   document.getElementById('vocab-form').addEventListener('submit', (e) => {
     e.preventDefault();

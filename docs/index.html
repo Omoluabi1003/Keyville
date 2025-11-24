@@ -23,6 +23,40 @@
     <main>
       <div class="layout">
         <div class="content">
+          <section class="card intro-card">
+            <div class="card-header">
+              <div>
+                <p class="eyebrow">Player Hub</p>
+                <h2>Set your detective badge</h2>
+              </div>
+              <span class="tag">Start here</span>
+            </div>
+            <p class="lead">Pick a code name and squad, then jump into the active room or restart with a clean slate.</p>
+            <form id="profile-form" class="profile-form">
+              <label class="field">
+                <span>Detective code name</span>
+                <input type="text" id="player-name" name="player-name" placeholder="E.g., Star Reader" autocomplete="name" />
+              </label>
+              <label class="field">
+                <span>Squad or homeroom (optional)</span>
+                <input type="text" id="player-team" name="player-team" placeholder="E.g., Team Griffin" autocomplete="organization" />
+              </label>
+              <div class="profile-actions">
+                <button class="primary" type="submit">Save badge</button>
+                <button class="secondary" type="button" id="start-button">Start / Resume adventure</button>
+                <button class="ghost" type="button" id="reset-progress">Reset progress</button>
+              </div>
+            </form>
+            <div class="orientation">
+              <p class="eyebrow">Game map</p>
+              <ul>
+                <li>5 rooms, each with instant feedback and auto-save.</li>
+                <li>Use the Start / Resume button to jump back into the next task.</li>
+                <li>Need a fresh try? Reset progress without losing your badge.</li>
+              </ul>
+            </div>
+          </section>
+
           <section class="progress-card">
             <div class="progress-label">
               <span id="progress-text">Room 1 of 5</span>
