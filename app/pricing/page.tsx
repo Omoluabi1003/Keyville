@@ -1,11 +1,13 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Pricing',
-  description: 'Pilot tiers and district rollout narrative for Keyville.'
-};
+  description: 'Pilot tiers and district rollout narrative for Keyville.',
+  path: '/pricing'
+});
 
 const tiers = [
   {

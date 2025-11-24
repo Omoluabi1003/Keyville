@@ -1,11 +1,13 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Storycraft Studio',
-  description: 'Micro-story studio overview with templates, AI tone coaching, and accessible controls.'
-};
+  description: 'Micro-story studio overview with templates, AI tone coaching, and accessible controls.',
+  path: '/storycraft'
+});
 
 export default function StorycraftPage() {
   return (

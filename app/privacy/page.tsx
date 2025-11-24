@@ -1,11 +1,13 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Privacy',
-  description: 'Data handling, retention, and student PII boundaries for Keyville.'
-};
+  description: 'Data handling, retention, and student PII boundaries for Keyville.',
+  path: '/privacy'
+});
 
 export default function PrivacyPage() {
   return (
