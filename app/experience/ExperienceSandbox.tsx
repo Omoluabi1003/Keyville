@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CTAButton from '../../components/CTAButton';
 import Section from '../../components/Section';
 import { sandboxChallenge } from '../../lib/navigation';
 
-const badges = ['Rookie Detective', 'Clue Collector', 'Signal Scout', 'Puzzle Pilot'];
+const identityBadges = ['Rookie Detective', 'Clue Collector', 'Signal Scout', 'Puzzle Pilot'];
 
 const rooms = [
   {
@@ -107,25 +107,135 @@ const scaffoldSteps = [
   }
 ];
 
+const writerLevels = [
+  { id: 'novice', label: 'Novice Writer', detail: 'You started the mission and showed up ready to think.' },
+  {
+    id: 'rising',
+    label: 'Rising Storyteller',
+    detail: 'Two rooms down and your clue-finding muscles are growing.'
+  },
+  { id: 'master', label: 'Master Scribe', detail: 'All rooms cleared with calm moves and solid reasoning.' }
+];
+
+type EarnedBadge = { id: string; label: string; detail: string };
+
+type StoredProgress = {
+  progressLevel: number;
+  currentRoomIndex: number;
+  earnedBadges: EarnedBadge[];
+  completedRooms: string[];
+  revisionCompleted: boolean;
+  reflectionCompleted: boolean;
+};
+
+const defaultProgressState: StoredProgress = {
+  progressLevel: 0,
+  currentRoomIndex: 0,
+  earnedBadges: [],
+  completedRooms: [],
+  revisionCompleted: false,
+  reflectionCompleted: false
+};
+
+const getStorageKey = (codename: string) =>
+  `keyville-storycraft-${codename.trim().toLowerCase().replace(/\s+/g, '-') || 'student'}`;
+
 export default function ExperienceSandbox() {
   const [codename, setCodename] = useState('Skyline Fox');
   const [badge, setBadge] = useState('Rookie Detective');
   const [response, setResponse] = useState('');
-  const [progressLevel, setProgressLevel] = useState(0);
-  const [currentRoomIndex, setCurrentRoomIndex] = useState(0);
+  const [progressLevel, setProgressLevel] = useState(defaultProgressState.progressLevel);
+  const [currentRoomIndex, setCurrentRoomIndex] = useState(defaultProgressState.currentRoomIndex);
+  const [completedRooms, setCompletedRooms] = useState<string[]>(defaultProgressState.completedRooms);
+  const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>(defaultProgressState.earnedBadges);
+  const [revisionCompleted, setRevisionCompleted] = useState(defaultProgressState.revisionCompleted);
+  const [reflectionCompleted, setReflectionCompleted] = useState(defaultProgressState.reflectionCompleted);
   const [vocabAnswers, setVocabAnswers] = useState<Record<string, string>>({});
   const [scaffoldingEnabled, setScaffoldingEnabled] = useState(true);
   const [skipForAdvanced, setSkipForAdvanced] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   const randomPrompt = useMemo(() => sandboxChallenge, []);
 
-  const systemCompletedRooms = useMemo(
-    () => rooms.slice(0, progressLevel).map((room) => room.id),
-    [progressLevel]
-  );
+  const systemCompletedRooms = useMemo(() => completedRooms, [completedRooms]);
+
+  const currentWriterLevel = useMemo(() => {
+    if (progressLevel >= rooms.length) return writerLevels[2];
+    if (progressLevel >= 2) return writerLevels[1];
+    return writerLevels[0];
+  }, [progressLevel]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const storedValue = window.localStorage.getItem(getStorageKey(codename));
+
+    if (storedValue) {
+      try {
+        const parsed = JSON.parse(storedValue) as StoredProgress;
+        setProgressLevel(parsed.progressLevel ?? defaultProgressState.progressLevel);
+        setCurrentRoomIndex(parsed.currentRoomIndex ?? defaultProgressState.currentRoomIndex);
+        setCompletedRooms(parsed.completedRooms ?? defaultProgressState.completedRooms);
+        setEarnedBadges(parsed.earnedBadges ?? defaultProgressState.earnedBadges);
+        setRevisionCompleted(parsed.revisionCompleted ?? defaultProgressState.revisionCompleted);
+        setReflectionCompleted(parsed.reflectionCompleted ?? defaultProgressState.reflectionCompleted);
+      } catch (error) {
+        console.error('Unable to read saved progress', error);
+        setProgressLevel(defaultProgressState.progressLevel);
+        setCurrentRoomIndex(defaultProgressState.currentRoomIndex);
+        setCompletedRooms(defaultProgressState.completedRooms);
+        setEarnedBadges(defaultProgressState.earnedBadges);
+        setRevisionCompleted(defaultProgressState.revisionCompleted);
+        setReflectionCompleted(defaultProgressState.reflectionCompleted);
+      }
+    } else {
+      setProgressLevel(defaultProgressState.progressLevel);
+      setCurrentRoomIndex(defaultProgressState.currentRoomIndex);
+      setCompletedRooms(defaultProgressState.completedRooms);
+      setEarnedBadges(defaultProgressState.earnedBadges);
+      setRevisionCompleted(defaultProgressState.revisionCompleted);
+      setReflectionCompleted(defaultProgressState.reflectionCompleted);
+    }
+
+    setHasHydrated(true);
+  }, [codename]);
+
+  useEffect(() => {
+    if (!hasHydrated || typeof window === 'undefined') return;
+
+    const storedProgress: StoredProgress = {
+      progressLevel,
+      currentRoomIndex,
+      earnedBadges,
+      completedRooms,
+      revisionCompleted,
+      reflectionCompleted
+    };
+
+    window.localStorage.setItem(getStorageKey(codename), JSON.stringify(storedProgress));
+  }, [codename, progressLevel, currentRoomIndex, earnedBadges, completedRooms, revisionCompleted, reflectionCompleted, hasHydrated]);
+
+  const addBadge = (badgeToAdd: EarnedBadge) => {
+    setEarnedBadges((prev) => {
+      if (prev.some((item) => item.id === badgeToAdd.id)) return prev;
+      return [...prev, badgeToAdd];
+    });
+  };
 
   const completeCurrentRoom = () => {
+    const room = rooms[currentRoomIndex];
+    const isNewCompletion = !completedRooms.includes(room.id);
     const nextProgress = Math.max(progressLevel, currentRoomIndex + 1);
+
+    if (isNewCompletion) {
+      addBadge({
+        id: `room-${room.id}`,
+        label: `${room.title} Badge`,
+        detail: 'You cleared the room and kept the mission moving.'
+      });
+      setCompletedRooms((prev) => [...prev, room.id]);
+    }
+
     setProgressLevel(Math.min(nextProgress, rooms.length));
     setCurrentRoomIndex((prev) => Math.min(prev + 1, rooms.length - 1));
   };
@@ -137,9 +247,37 @@ export default function ExperienceSandbox() {
   const redoRoom = (roomIndex: number) => {
     setProgressLevel(roomIndex);
     setCurrentRoomIndex(roomIndex);
+
+    const reopenedRooms = new Set(rooms.slice(roomIndex).map((room) => room.id));
+    setCompletedRooms((prev) => prev.filter((roomId) => !reopenedRooms.has(roomId)));
   };
 
   const progress = Math.round((progressLevel / rooms.length) * 100);
+  const progressMapNodes = rooms.map((room, index) => {
+    const isComplete = completedRooms.includes(room.id);
+    const isActive = currentRoomIndex === index && !isComplete;
+
+    return {
+      ...room,
+      status: isComplete ? 'done' : isActive ? 'active' : 'locked'
+    };
+  });
+
+  const handleRevision = () => {
+    if (revisionCompleted) return;
+    setRevisionCompleted(true);
+    addBadge({ id: 'revision-ready', label: 'Revise Ranger', detail: 'You tried a swap and made the writing clearer.' });
+  };
+
+  const handleReflection = () => {
+    if (reflectionCompleted) return;
+    setReflectionCompleted(true);
+    addBadge({
+      id: 'reflection-hero',
+      label: 'Reflective Thinker',
+      detail: 'You noticed what changed and why it mattered.'
+    });
+  };
 
   const correctVocabulary = vocabulary.filter((item) => vocabAnswers[item.word] === item.correct).length;
 
@@ -257,32 +395,54 @@ export default function ExperienceSandbox() {
               </div>
 
               {scaffoldingEnabled && !skipForAdvanced ? (
-                <ol className="micro-steps">
-                  {scaffoldSteps.map((step, index) => (
-                    <li key={step.id} className="micro-step">
-                      <div className="micro-step-header">
-                        <div className="micro-step-number" aria-label={`Step ${index + 1}`}>
-                          {index + 1}
-                        </div>
-                        <div>
-                          <div className="micro-step-title">
-                            <span>{step.title}</span>
-                            <span
-                              className="tooltip-trigger"
-                              role="img"
-                              aria-label={step.tooltip}
-                              title={step.tooltip}
-                            >
-                              ℹ️
-                            </span>
+                <>
+                  <ol className="micro-steps">
+                    {scaffoldSteps.map((step, index) => (
+                      <li key={step.id} className="micro-step">
+                        <div className="micro-step-header">
+                          <div className="micro-step-number" aria-label={`Step ${index + 1}`}>
+                            {index + 1}
                           </div>
-                          <p className="small">{step.prompt}</p>
+                          <div>
+                            <div className="micro-step-title">
+                              <span>{step.title}</span>
+                              <span
+                                className="tooltip-trigger"
+                                role="img"
+                                aria-label={step.tooltip}
+                                title={step.tooltip}
+                              >
+                                ℹ️
+                              </span>
+                            </div>
+                            <p className="small">{step.prompt}</p>
+                          </div>
                         </div>
+                        <p className="small">Sample: {step.sample}</p>
+                      </li>
+                    ))}
+                  </ol>
+                  <div className="micro-actions">
+                    <div className="micro-action-card">
+                      <div>
+                        <p className="small">Revise checkpoint</p>
+                        <p className="small">Swap one word and tell the system you revised.</p>
                       </div>
-                      <p className="small">Sample: {step.sample}</p>
-                    </li>
-                  ))}
-                </ol>
+                      <button className="button" onClick={handleRevision} disabled={revisionCompleted}>
+                        {revisionCompleted ? 'Marked' : 'Mark revise complete'}
+                      </button>
+                    </div>
+                    <div className="micro-action-card">
+                      <div>
+                        <p className="small">Reflect checkpoint</p>
+                        <p className="small">Write why the change helps and log it.</p>
+                      </div>
+                      <button className="button secondary" onClick={handleReflection} disabled={reflectionCompleted}>
+                        {reflectionCompleted ? 'Marked' : 'Mark reflect complete'}
+                      </button>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <p className="small" aria-live="polite">
                   Scaffolding is off. Students can jump straight to the room submission while teachers monitor pacing.
@@ -291,10 +451,10 @@ export default function ExperienceSandbox() {
             </div>
           </Section>
 
-          <Section title="Set your detective badge" subtitle="Stay focused with a simple identity">
+          <Section title="Set your detective badge" subtitle="Stay focused with a simple identity and saved progress">
             <div className="card">
               <div className="badge-grid">
-                {badges.map((name) => (
+                {identityBadges.map((name) => (
                   <button
                     key={name}
                     className={`pill ${badge === name ? 'pill-active' : ''}`}
@@ -313,6 +473,9 @@ export default function ExperienceSandbox() {
                   onChange={(e) => setCodename(e.target.value)}
                   aria-label="Enter your codename"
                 />
+                <p className="small" aria-live="polite">
+                  Progress and badges save on this device for the codename above.
+                </p>
                 <label htmlFor="response">Quick rewrite practice</label>
                 <textarea
                   id="response"
@@ -364,6 +527,63 @@ export default function ExperienceSandbox() {
         </div>
 
         <div className="column">
+          <div className="card map-card">
+            <div className="map-header">
+              <div>
+                <p className="small">Writer map</p>
+                <h3>{currentWriterLevel.label}</h3>
+                <p className="small">{currentWriterLevel.detail}</p>
+              </div>
+              <div className="level-chip">Level up by finishing rooms, revising, and reflecting.</div>
+            </div>
+            <div className="progress-map" role="img" aria-label={`Progress map: ${progressLevel} of ${rooms.length} rooms done`}>
+              {progressMapNodes.map((room, index) => (
+                <div className="map-segment" key={room.id}>
+                  <div className={`map-node ${room.status}`}>
+                    <span className="map-step">Room {index + 1}</span>
+                    <strong>{room.title}</strong>
+                    <p className="small">
+                      {room.status === 'done'
+                        ? 'Finished—badge locked in'
+                        : room.status === 'active'
+                          ? 'Working now'
+                          : 'Waiting its turn'}
+                    </p>
+                  </div>
+                  {index < progressMapNodes.length - 1 && <div className="map-connector" aria-hidden />}
+                </div>
+              ))}
+            </div>
+            <div className="checkpoint-row">
+              <div className={`checkpoint ${revisionCompleted ? 'checkpoint-done' : ''}`}>
+                <p className="small">Revise badge</p>
+                <p className="small">{revisionCompleted ? 'Logged' : 'Mark revise complete to earn it.'}</p>
+              </div>
+              <div className={`checkpoint ${reflectionCompleted ? 'checkpoint-done' : ''}`}>
+                <p className="small">Reflect badge</p>
+                <p className="small">{reflectionCompleted ? 'Logged' : 'Mark reflect complete to earn it.'}</p>
+              </div>
+            </div>
+            <div className="earned-badges">
+              <p className="small">Badges earned</p>
+              {earnedBadges.length ? (
+                <ul className="badge-list" role="list">
+                  {earnedBadges.map((earned) => (
+                    <li key={earned.id} className="earned-badge">
+                      <span aria-hidden>🏅</span>
+                      <div>
+                        <strong>{earned.label}</strong>
+                        <p className="small">{earned.detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="small">Badges will appear as you finish rooms, revise, and reflect.</p>
+              )}
+            </div>
+          </div>
+
           <div className="card status-card">
             <div className="progress-wrap">
               <div>

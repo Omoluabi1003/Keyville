@@ -454,9 +454,139 @@ blockquote {
   margin-top: 1rem;
 }
 
+.micro-actions {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.micro-action-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 2px dashed var(--border);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.95);
+}
+
 .vault-grid {
   display: grid;
   gap: 0.75rem;
+}
+
+.map-card {
+  display: grid;
+  gap: 0.75rem;
+  background: linear-gradient(145deg, rgba(255, 139, 209, 0.16), rgba(125, 211, 255, 0.16));
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.level-chip {
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid var(--border);
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.85rem;
+  font-weight: 700;
+  color: #1f2933;
+}
+
+.progress-map {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.map-segment {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.map-node {
+  border: 2px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.map-node.active {
+  border-color: var(--accent);
+  box-shadow: 0 10px 20px rgba(124, 78, 255, 0.18);
+}
+
+.map-node.done {
+  background: linear-gradient(120deg, rgba(125, 211, 255, 0.28), rgba(255, 255, 255, 0.95));
+}
+
+.map-node.locked {
+  opacity: 0.8;
+}
+
+.map-step {
+  display: inline-flex;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(125, 211, 255, 0.18);
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+}
+
+.map-connector {
+  width: 28px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.checkpoint-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
+}
+
+.checkpoint {
+  border: 2px dashed var(--border);
+  border-radius: 0.9rem;
+  padding: 0.65rem;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.checkpoint-done {
+  border-style: solid;
+  border-color: var(--accent);
+  box-shadow: 0 8px 18px rgba(124, 78, 255, 0.12);
+}
+
+.earned-badges {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.badge-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.earned-badge {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  border: 2px solid var(--border);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .vault-row {
