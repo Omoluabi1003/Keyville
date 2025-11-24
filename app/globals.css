@@ -708,3 +708,32 @@ blockquote {
   cursor: help;
   font-size: 0.85rem;
 }
+
+.micro-step-actions {
+  margin-top: 0.65rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.read-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.9rem;
+  border: 2px solid #1c1a33;
+  background: #1c1a33;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.98rem;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(28, 26, 51, 0.18);
+}
+
+.read-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
