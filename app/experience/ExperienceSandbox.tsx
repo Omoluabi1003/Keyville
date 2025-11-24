@@ -5,114 +5,265 @@ import CTAButton from '../../components/CTAButton';
 import Section from '../../components/Section';
 import { sandboxChallenge } from '../../lib/navigation';
 
-const avatars = ['Skyline Fox', 'River Lantern', 'Cipher Owl', 'North Star'];
+const badges = ['Rookie Detective', 'Clue Collector', 'Signal Scout', 'Puzzle Pilot'];
+
+const rooms = [
+  {
+    id: 'files',
+    title: 'Class files',
+    focus: 'Context clues',
+    tasks: [
+      'Find words that hint at the time of day.',
+      'Spot a phrase that reveals the tone.',
+      'Highlight a clue that tells you who is speaking.'
+    ],
+    action: 'Solve clue'
+  },
+  {
+    id: 'radio',
+    title: 'Radio room',
+    focus: 'Sequencing',
+    tasks: ['Put the steps in order.', 'Circle the transition words.', 'Check the final signal.'],
+    action: 'Tune in'
+  },
+  {
+    id: 'press',
+    title: 'Press release room',
+    focus: 'Inference',
+    tasks: ['Match the quote to the speaker.', 'Underline the main claim.', 'Swap one vague word for a vivid one.'],
+    action: 'Create release'
+  },
+  {
+    id: 'mail',
+    title: 'Email room',
+    focus: 'Audience',
+    tasks: ['Check the greeting and closing.', 'Replace a bossy sentence.', 'Add one friendly detail.'],
+    action: 'Send email'
+  }
+];
+
+const vocabulary = [
+  {
+    word: 'Inference',
+    prompt: 'Using clues to figure out what is not said directly.',
+    choices: ['Prediction', 'Guess with evidence', 'Random idea'],
+    correct: 'Guess with evidence'
+  },
+  {
+    word: 'Sequence',
+    prompt: 'Putting events or steps in the right order.',
+    choices: ['Mixing everything', 'Exact timing', 'Story steps'],
+    correct: 'Story steps'
+  },
+  {
+    word: 'Context',
+    prompt: 'Words around a clue that help you understand it.',
+    choices: ['Random detail', 'Helpful surroundings', 'Unrelated fact'],
+    correct: 'Helpful surroundings'
+  },
+  {
+    word: 'Audience',
+    prompt: 'The person you are writing for.',
+    choices: ['A crowd of strangers', 'Who reads or hears it', 'The loudest voice'],
+    correct: 'Who reads or hears it'
+  }
+];
 
 export default function ExperienceSandbox() {
   const [codename, setCodename] = useState('Skyline Fox');
+  const [badge, setBadge] = useState('Rookie Detective');
   const [response, setResponse] = useState('');
-  const [step, setStep] = useState<'codename' | 'challenge' | 'feedback'>('codename');
+  const [completedRooms, setCompletedRooms] = useState<string[]>([]);
+  const [vocabAnswers, setVocabAnswers] = useState<Record<string, string>>({});
 
   const randomPrompt = useMemo(() => sandboxChallenge, []);
 
-  const completed = step === 'feedback';
+  const toggleRoom = (roomId: string) => {
+    setCompletedRooms((prev) =>
+      prev.includes(roomId) ? prev.filter((id) => id !== roomId) : [...prev, roomId]
+    );
+  };
+
+  const progress = Math.round((completedRooms.length / rooms.length) * 100);
+
+  const correctVocabulary = vocabulary.filter((item) => vocabAnswers[item.word] === item.correct).length;
 
   return (
-    <div>
-      <Section title="Step 1" subtitle="Choose a codename or avatar" id="step-1">
-        <div className="card-grid">
-          {avatars.map((name) => (
-            <label key={name} style={{ cursor: 'pointer' }}>
-              <input
-                type="radio"
-                name="codename"
-                value={name}
-                checked={codename === name}
-                onChange={() => setCodename(name)}
-                aria-label={`Choose codename ${name}`}
-              />
-              <p style={{ marginTop: '0.35rem' }}>{name}</p>
-            </label>
-          ))}
-        </div>
-        <CTAButton href="#step-2" ariaLabel="Proceed to micro-challenge" variant="secondary">
-          Save codename
-        </CTAButton>
-      </Section>
-
-      <Section title="Step 2" subtitle="Play one room rotation micro-challenge" id="step-2">
-        <div className="card">
-          <p className="small">Prompt</p>
-          <p>{randomPrompt.prompt}</p>
-          <div className="alert" aria-live="polite">
-            <strong>Scaffolds:</strong> {randomPrompt.scaffolds.join(' • ')}
+    <div className="escape-shell">
+      <header className="escape-hero">
+        <div>
+          <p className="badge">The Lexicon Detective Escape Room</p>
+          <h1>Untangle the story and unlock the final door</h1>
+          <p className="small">Short missions, bright clues, and calm pacing so a 6th grader stays curious—not overwhelmed.</p>
+          <div className="status-chips" role="status" aria-label="Room pace and mood">
+            <span className="chip">⭐ Fun levels are safe</span>
+            <span className="chip">🪴 Calm pacing</span>
+            <span className="chip">🧠 Thinking in steps</span>
           </div>
-          <label htmlFor="response" style={{ marginTop: '1rem' }}>
-            Your rewrite as {codename}
-          </label>
-          <textarea
-            id="response"
-            rows={4}
-            value={response}
-            onChange={(e) => setResponse(e.target.value)}
-            aria-label="Enter your rewritten sentence"
-            placeholder={randomPrompt.sampleResponse}
-          />
-          <button
-            className="button"
-            style={{ marginTop: '0.75rem' }}
-            onClick={() => setStep('feedback')}
-            aria-label="Submit response and view AI feedback"
-          >
-            Submit and view AI feedback
-          </button>
         </div>
-      </Section>
+        <div className="callout">
+          <p className="small">Action</p>
+          <h3>Invite a friend to help</h3>
+          <p className="small">Two brains, one puzzle. Share your codename and split the rooms.</p>
+          <CTAButton href="#rooms" ariaLabel="Jump to investigation list">
+            Start the investigation
+          </CTAButton>
+        </div>
+      </header>
 
-      <Section title="Step 3" subtitle="AI feedback + telemetry snapshot" id="step-3">
-        <div className="card" aria-live="polite">
-          <p className="small">AI feedback</p>
-          <ul role="list" style={{ paddingLeft: '1rem' }}>
-            {randomPrompt.aiFeedback.highlights.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          <p className="small">Next step: {randomPrompt.aiFeedback.nextStep}</p>
-          {completed ? (
-            <p className="badge" aria-label="Submission received">
-              Submission saved for demo user {codename}
-            </p>
-          ) : (
-            <p className="small">Complete step 2 to preview how students receive feedback.</p>
-          )}
-
-          <table className="table" aria-label="Telemetry snapshot">
-            <thead>
-              <tr>
-                <th scope="col">Metric</th>
-                <th scope="col">Value</th>
-                <th scope="col">Benchmark</th>
-              </tr>
-            </thead>
-            <tbody>
-              {randomPrompt.telemetry.map((row) => (
-                <tr key={row.metric}>
-                  <td>{row.metric}</td>
-                  <td>{row.value}</td>
-                  <td>{row.benchmark}</td>
-                </tr>
+      <div className="escape-grid" id="rooms">
+        <div className="column">
+          <Section title="Navigate the investigation" subtitle="Follow the four rooms in order">
+            <div className="card-list">
+              {rooms.map((room) => (
+                <div className="card room-card" key={room.id}>
+                  <div className="room-header">
+                    <div>
+                      <p className="small">Room focus: {room.focus}</p>
+                      <h3>{room.title}</h3>
+                    </div>
+                    <button
+                      className="button secondary"
+                      onClick={() => toggleRoom(room.id)}
+                      aria-pressed={completedRooms.includes(room.id)}
+                      aria-label={`${room.action} for ${room.title}`}
+                    >
+                      {completedRooms.includes(room.id) ? 'Mark as redo' : 'Mark as done'}
+                    </button>
+                  </div>
+                  <ul role="list" className="task-list">
+                    {room.tasks.map((task) => (
+                      <li key={task}>{task}</li>
+                    ))}
+                  </ul>
+                  <p className="small">Action: {room.action}</p>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </Section>
+
+          <Section title="Set your detective badge" subtitle="Stay focused with a simple identity">
+            <div className="card">
+              <div className="badge-grid">
+                {badges.map((name) => (
+                  <button
+                    key={name}
+                    className={`pill ${badge === name ? 'pill-active' : ''}`}
+                    onClick={() => setBadge(name)}
+                    aria-pressed={badge === name}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+              <div className="codename-inputs">
+                <label htmlFor="codename">Codename</label>
+                <input
+                  id="codename"
+                  value={codename}
+                  onChange={(e) => setCodename(e.target.value)}
+                  aria-label="Enter your codename"
+                />
+                <label htmlFor="response">Quick rewrite practice</label>
+                <textarea
+                  id="response"
+                  rows={3}
+                  value={response}
+                  onChange={(e) => setResponse(e.target.value)}
+                  placeholder="Type a one-sentence rewrite of the clue."
+                />
+              </div>
+            </div>
+          </Section>
+
+          <Section title="Vocabulary vault" subtitle="Match each word to the right idea">
+            <div className="card">
+              <div className="vault-grid">
+                {vocabulary.map((item) => (
+                  <div key={item.word} className="vault-row">
+                    <div>
+                      <p className="small">{item.word}</p>
+                      <p>{item.prompt}</p>
+                    </div>
+                    <label className="small" htmlFor={`select-${item.word}`}>
+                      Choose a match
+                    </label>
+                    <select
+                      id={`select-${item.word}`}
+                      value={vocabAnswers[item.word] ?? ''}
+                      onChange={(e) =>
+                        setVocabAnswers((prev) => ({ ...prev, [item.word]: e.target.value }))
+                      }
+                    >
+                      <option value="">Select</option>
+                      {item.choices.map((choice) => (
+                        <option key={choice} value={choice}>
+                          {choice}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+              <p className="small" aria-live="polite">
+                {correctVocabulary === vocabulary.length
+                  ? 'Vault unlocked! Every word is matched.'
+                  : `${correctVocabulary} of ${vocabulary.length} matches feel solid.`}
+              </p>
+            </div>
+          </Section>
         </div>
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <CTAButton href="/teacher" ariaLabel="View teacher view of telemetry">
-            View teacher dashboard
-          </CTAButton>
-          <CTAButton href="/pricing" variant="secondary">
-            Request a pilot
-          </CTAButton>
+
+        <div className="column">
+          <div className="card status-card">
+            <div className="progress-wrap">
+              <div>
+                <p className="small">Room progress</p>
+                <h3>{progress}% steady</h3>
+              </div>
+              <div className="progress" aria-label={`Progress ${progress}%`} role="img">
+                <span style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+            <div className="status-list">
+              <div>
+                <p className="small">Most recent feedback</p>
+                <p>“{randomPrompt.aiFeedback.highlights[0]}”</p>
+              </div>
+              <div>
+                <p className="small">Pace</p>
+                <p>Slow is smooth. Try one clue at a time.</p>
+              </div>
+            </div>
+            <div className="status-actions">
+              <button className="button">Ask for a hint</button>
+              <button className="button secondary">Pause for a stretch</button>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3>Escape room rules</h3>
+            <ul role="list" className="task-list">
+              <li>Use inside voices; teammates need calm to think.</li>
+              <li>Write your own ideas—no copy/paste.</li>
+              <li>Check in with your partner before finishing a room.</li>
+            </ul>
+            <p className="small">Need to step out? Leave your codename so we can save your spot.</p>
+          </div>
+
+          <div className="card">
+            <h3>Expect a friend to ask…</h3>
+            <ul role="list" className="task-list">
+              <li>How do you know the order is correct?</li>
+              <li>Which clue told you who was speaking?</li>
+              <li>What change would make the email sound kinder?</li>
+            </ul>
+            <CTAButton href="/pricing" variant="secondary">
+              Share this demo
+            </CTAButton>
+          </div>
         </div>
-      </Section>
+      </div>
     </div>
   );
 }
