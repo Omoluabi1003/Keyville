@@ -45,6 +45,10 @@ body.teacher-mode {
   z-index: 10;
 }
 
+#transition-overlay.hidden {
+  display: none;
+}
+
 .transition-card {
   background: var(--card);
   border: 1px solid var(--border);
