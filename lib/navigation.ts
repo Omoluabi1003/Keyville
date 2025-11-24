@@ -13,21 +13,22 @@ export const routes: RouteConfig[] = [
 ];
 
 export const siteMetadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Writing Growth through Playful Practice',
+  title: 'KEYVILLE | Project by ETL GIS Consulting LLC | Writing Growth through Playful Practice',
   description:
-    'Keyville, built by ETL GIS Consulting LLC, helps students strengthen writing stamina and feedback loops through guided room rotations, dashboards, and secure district workflows.',
+    'KEYVILLE is a project by ETL GIS Consulting LLC that helps students strengthen writing stamina and feedback loops through guided room rotations, dashboards, and secure district workflows.',
   openGraph: {
-    title: 'Keyville by ETL GIS Consulting LLC | Writing Growth through Playful Practice',
+    title: 'KEYVILLE | Project by ETL GIS Consulting LLC | Writing Growth through Playful Practice',
     description:
-      'Room-rotation writing practice, teacher dashboards, governance-ready privacy and security posture for districts, delivered by ETL GIS Consulting LLC.',
+      'Room-rotation writing practice, teacher dashboards, governance-ready privacy and security posture for districts — built as the KEYVILLE project by ETL GIS Consulting LLC.',
     url: 'https://etl-gis.com',
-    siteName: 'ETL GIS Consulting LLC',
+    siteName: 'KEYVILLE · ETL GIS Consulting LLC',
     type: 'website'
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Keyville by ETL GIS Consulting LLC for districts, teachers, and students',
-    description: 'Interactive writing practice with AI feedback and telemetry built for schools, created by ETL GIS Consulting LLC.'
+    title: 'KEYVILLE (project by ETL GIS Consulting LLC) for districts, teachers, and students',
+    description:
+      'Interactive writing practice with AI feedback and telemetry built for schools, created as the KEYVILLE project by ETL GIS Consulting LLC.'
   }
 };
 

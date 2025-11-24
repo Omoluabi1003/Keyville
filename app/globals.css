@@ -115,6 +115,30 @@ nav a.active {
   transform: translateY(-1px);
 }
 
+.brand-mark {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 1rem;
+  border: 2px solid var(--border);
+  background: linear-gradient(135deg, rgba(125, 211, 255, 0.25), rgba(255, 139, 209, 0.22));
+  box-shadow: 0 12px 30px rgba(124, 78, 255, 0.12);
+}
+
+.brand-primary {
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-size: 1.05rem;
+}
+
+.brand-subtitle {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .hero {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -197,6 +221,32 @@ p {
   padding: 2rem 1.25rem;
   margin-top: 2rem;
   box-shadow: 0 -10px 30px rgba(124, 78, 255, 0.08);
+}
+
+.install-banner {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  max-width: 360px;
+  background: radial-gradient(circle at 10% 20%, rgba(125, 211, 255, 0.18), rgba(255, 255, 255, 0.95));
+  border: 2px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 18px 44px rgba(124, 78, 255, 0.22);
+  z-index: 100;
+}
+
+.install-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.install-dismiss {
+  border-color: var(--border);
+  background: #fff;
+  color: var(--muted);
 }
 
 .footer-grid {

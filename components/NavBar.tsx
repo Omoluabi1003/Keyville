@@ -16,10 +16,11 @@ export default function NavBar() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <Link
             href="/"
-            aria-label="Go to ETL GIS Consulting LLC home"
-            style={{ fontWeight: 800, letterSpacing: '0.02em' }}
+            aria-label="Go to the KEYVILLE home page (project by ETL GIS Consulting LLC)"
+            className="brand-mark"
           >
-            ETL GIS Consulting LLC
+            <span className="brand-primary">KEYVILLE</span>
+            <span className="brand-subtitle">A project by ETL GIS Consulting LLC</span>
           </Link>
           <ul role="list">
             {routes.map((route) => {

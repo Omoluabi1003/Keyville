@@ -4,8 +4,8 @@ import { caseStudies } from '../../lib/navigation';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Teacher Mode',
-  description: 'Rotation workflow, rubric overlays, exports, accessibility, and pilot readiness for teachers.'
+  title: 'KEYVILLE · Project by ETL GIS Consulting LLC | Teacher Mode',
+  description: 'Rotation workflow, rubric overlays, exports, accessibility, and pilot readiness for teachers inside KEYVILLE.'
 };
 
 export default function TeacherPage() {

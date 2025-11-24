@@ -3,8 +3,8 @@ import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Integrations',
-  description: 'SSO, roster sync, and API overview for quick district onboarding.'
+  title: 'KEYVILLE · Project by ETL GIS Consulting LLC | Integrations',
+  description: 'SSO, roster sync, and API overview for quick district onboarding into KEYVILLE.'
 };
 
 export default function IntegrationsPage() {

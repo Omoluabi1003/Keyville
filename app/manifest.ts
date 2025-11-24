@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Keyville by ETL GIS Consulting LLC',
-    short_name: 'Keyville',
+    name: 'KEYVILLE · Project by ETL GIS Consulting LLC',
+    short_name: 'KEYVILLE',
     description:
       'Writing growth through playful practice, delivered by ETL GIS Consulting LLC with privacy-first, classroom-ready workflows.',
     start_url: '/',
