@@ -4,14 +4,14 @@ import { caseStudies } from '../../lib/navigation';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | About',
-  description: 'Mission, pilots, partners, and team behind Keyville.'
+  title: 'KEYVILLE · Project by ETL GIS Consulting LLC | About',
+  description: 'Mission, pilots, partners, and team behind KEYVILLE.'
 };
 
 export default function AboutPage() {
   return (
     <div>
-      <h1>About Keyville by ETL GIS Consulting LLC</h1>
+      <h1>About KEYVILLE · Project by ETL GIS Consulting LLC</h1>
       <p className="small">We help students build writing stamina with playful practice and trustworthy AI.</p>
 
       <Section title="Mission">

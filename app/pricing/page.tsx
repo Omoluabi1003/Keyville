@@ -3,8 +3,8 @@ import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Pricing',
-  description: 'Pilot tiers and district rollout narrative for Keyville.'
+  title: 'KEYVILLE · Project by ETL GIS Consulting LLC | Pricing',
+  description: 'Pilot tiers and district rollout narrative for KEYVILLE.'
 };
 
 const tiers = [

@@ -3,8 +3,8 @@ import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Security',
-  description: 'Security posture, encryption, hosting, and district readiness.'
+  title: 'KEYVILLE · Project by ETL GIS Consulting LLC | Security',
+  description: 'Security posture, encryption, hosting, and district readiness for KEYVILLE.'
 };
 
 export default function SecurityPage() {

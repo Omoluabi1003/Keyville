@@ -3,8 +3,8 @@ import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville by ETL GIS Consulting LLC | Students',
-  description: 'Student journey with practice loops, accessibility-first controls, and AI nudges that build stamina.'
+  title: 'KEYVILLE · Project by ETL GIS Consulting LLC | Students',
+  description: 'Student journey with practice loops, accessibility-first controls, and AI nudges that build stamina inside KEYVILLE.'
 };
 
 export default function StudentsPage() {
