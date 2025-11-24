@@ -4,6 +4,17 @@ import { useEffect, useMemo, useState } from 'react';
 import CTAButton from '../../components/CTAButton';
 import Section from '../../components/Section';
 import { sandboxChallenge } from '../../lib/navigation';
+import { kidThemes } from '../../lib/kidThemes';
+import {
+  classSections,
+  defaultTeacherClassSetting,
+  difficultyLabels,
+  scheduleLabels,
+  schedulePromptAdds,
+  teacherStorageKey,
+  tierPromptAdds,
+  type TeacherClassSetting
+} from '../../lib/classSettings';
 
 const identityBadges = ['Rookie Detective', 'Clue Collector', 'Signal Scout', 'Puzzle Pilot'];
 
@@ -154,8 +165,13 @@ export default function ExperienceSandbox() {
   const [scaffoldingEnabled, setScaffoldingEnabled] = useState(true);
   const [skipForAdvanced, setSkipForAdvanced] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [selectedClass, setSelectedClass] = useState(classSections[1]);
+  const [teacherPlans, setTeacherPlans] = useState<Record<string, TeacherClassSetting>>({});
 
-  const randomPrompt = useMemo(() => sandboxChallenge, []);
+  const activeTeacherPlan = useMemo(
+    () => teacherPlans[selectedClass] ?? defaultTeacherClassSetting(),
+    [selectedClass, teacherPlans]
+  );
 
   const systemCompletedRooms = useMemo(() => completedRooms, [completedRooms]);
 
@@ -164,6 +180,56 @@ export default function ExperienceSandbox() {
     if (progressLevel >= 2) return writerLevels[1];
     return writerLevels[0];
   }, [progressLevel]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storedPlans = window.localStorage.getItem(teacherStorageKey);
+    if (storedPlans) {
+      try {
+        setTeacherPlans(JSON.parse(storedPlans) as Record<string, TeacherClassSetting>);
+      } catch (error) {
+        console.error('Unable to read teacher plan settings', error);
+      }
+    }
+  }, []);
+
+  const selectedTheme = useMemo(
+    () => kidThemes.find((theme) => theme.id === activeTeacherPlan.selectedThemeId),
+    [activeTeacherPlan.selectedThemeId]
+  );
+
+  const themePromptCount = selectedTheme?.starterPrompts.length ?? 0;
+
+  const lessonPlan = useMemo(() => {
+    const basePrompt =
+      activeTeacherPlan.kidModeEnabled && selectedTheme && themePromptCount
+        ? selectedTheme.starterPrompts[activeTeacherPlan.promptIndex % themePromptCount]
+        : sandboxChallenge.prompt;
+
+    const prompt = `${basePrompt} ${tierPromptAdds[activeTeacherPlan.difficultyTier]} ${schedulePromptAdds[activeTeacherPlan.schedulePreset]}`;
+
+    let depth = scaffoldSteps.length;
+    if (activeTeacherPlan.difficultyTier === 'standard') {
+      depth = Math.max(scaffoldSteps.length - 1, 4);
+    } else if (activeTeacherPlan.difficultyTier === 'challenge') {
+      depth = Math.max(scaffoldSteps.length - 2, 3);
+    }
+
+    if (activeTeacherPlan.schedulePreset === 'free-write-day') {
+      depth = Math.max(depth - 1, 2);
+    }
+
+    const effectiveScaffolds = scaffoldSteps.slice(0, depth);
+
+    return {
+      prompt,
+      guardrail:
+        activeTeacherPlan.kidModeEnabled && selectedTheme
+          ? `${selectedTheme.guardrail} · Scaffold depth: ${effectiveScaffolds.length} steps`
+          : 'Uses rubric-aligned language for older students.',
+      scaffolds: effectiveScaffolds
+    };
+  }, [activeTeacherPlan, selectedTheme, themePromptCount]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -214,6 +280,13 @@ export default function ExperienceSandbox() {
 
     window.localStorage.setItem(getStorageKey(codename), JSON.stringify(storedProgress));
   }, [codename, progressLevel, currentRoomIndex, earnedBadges, completedRooms, revisionCompleted, reflectionCompleted, hasHydrated]);
+
+  useEffect(() => {
+    setScaffoldingEnabled(activeTeacherPlan.schedulePreset !== 'free-write-day');
+    setSkipForAdvanced(
+      activeTeacherPlan.difficultyTier === 'challenge' || activeTeacherPlan.schedulePreset === 'challenge-day'
+    );
+  }, [activeTeacherPlan.schedulePreset, activeTeacherPlan.difficultyTier]);
 
   const addBadge = (badgeToAdd: EarnedBadge) => {
     setEarnedBadges((prev) => {
@@ -306,6 +379,48 @@ export default function ExperienceSandbox() {
 
       <div className="escape-grid" id="rooms">
         <div className="column">
+          <Section
+            title="Teacher plan in effect"
+            subtitle="Difficulty tier and schedule presets from the dashboard apply to this class"
+          >
+            <div className="card" aria-live="polite">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between' }}>
+                <div>
+                  <p className="small">Class</p>
+                  <select
+                    value={selectedClass}
+                    onChange={(event) => setSelectedClass(event.target.value)}
+                    aria-label="Select class plan"
+                  >
+                    {classSections.map((section) => (
+                      <option key={section} value={section}>
+                        {section}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <p className="small">Difficulty tier</p>
+                  <p>{difficultyLabels[activeTeacherPlan.difficultyTier]}</p>
+                </div>
+                <div>
+                  <p className="small">Schedule preset</p>
+                  <p>{scheduleLabels[activeTeacherPlan.schedulePreset]}</p>
+                </div>
+              </div>
+              <div className="status-list" style={{ marginTop: '1rem' }}>
+                <div>
+                  <p className="small">Prompt students see</p>
+                  <p>{lessonPlan.prompt}</p>
+                </div>
+                <div>
+                  <p className="small">Guardrail + scaffolds</p>
+                  <p>{lessonPlan.guardrail}</p>
+                </div>
+              </div>
+            </div>
+          </Section>
+
           <Section title="Navigate the investigation" subtitle="Follow the four rooms in order">
             <p className="small">
               The system tracks completion. Finish the active room to move the progress bar, and
@@ -393,11 +508,15 @@ export default function ExperienceSandbox() {
                   <span>Skip scaffolding for advanced class</span>
                 </label>
               </div>
+              <p className="small" aria-live="polite">
+                Teacher dashboard plan: {scheduleLabels[activeTeacherPlan.schedulePreset]} with{' '}
+                {difficultyLabels[activeTeacherPlan.difficultyTier].toLowerCase()}. Scaffolds auto-trim to match.
+              </p>
 
               {scaffoldingEnabled && !skipForAdvanced ? (
                 <>
                   <ol className="micro-steps">
-                    {scaffoldSteps.map((step, index) => (
+                    {lessonPlan.scaffolds.map((step, index) => (
                       <li key={step.id} className="micro-step">
                         <div className="micro-step-header">
                           <div className="micro-step-number" aria-label={`Step ${index + 1}`}>
@@ -594,15 +713,15 @@ export default function ExperienceSandbox() {
                 <span style={{ width: `${progress}%` }} />
               </div>
             </div>
-            <div className="status-list">
-              <div>
-                <p className="small">Most recent feedback</p>
-                <p>“{randomPrompt.aiFeedback.highlights[0]}”</p>
-              </div>
-              <div>
-                <p className="small">Pace</p>
-                <p>Slow is smooth. Try one clue at a time.</p>
-              </div>
+              <div className="status-list">
+                <div>
+                  <p className="small">Most recent feedback</p>
+                  <p>“{sandboxChallenge.aiFeedback.highlights[0]}”</p>
+                </div>
+                <div>
+                  <p className="small">Pace</p>
+                  <p>Slow is smooth. Try one clue at a time.</p>
+                </div>
             </div>
             <div className="status-actions">
               <button className="button">Ask for a hint</button>
