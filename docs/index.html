@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Lexicon Detective Escape Room</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="badge">Grade 6</div>
+      <div>
+        <p class="eyebrow">Language Game</p>
+        <h1>The Lexicon Detective Escape Room</h1>
+        <p class="subtitle">Crack every clue across five rooms to earn your Chief Language Officer badge!</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="progress-card">
+        <div class="progress-label">
+          <span id="progress-text">Room 1 of 5</span>
+          <span id="progress-hint">Vocabulary Vault</span>
+        </div>
+        <div class="progress">
+          <div class="progress-fill" id="progress-fill" style="width: 20%"></div>
+        </div>
+      </section>
+
+      <section class="card" id="room-0">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Room 1</p>
+            <h2>Vocabulary Vault</h2>
+          </div>
+          <span class="tag">Match &amp; Unlock</span>
+        </div>
+        <p class="lead">Match each word with the correct definition to swing the vault door open.</p>
+        <form id="vocab-form" class="stack">
+          <div class="match-row">
+            <div class="definition">1. Elated</div>
+            <select name="elated" aria-label="Definition for elated">
+              <option value="">Choose the match</option>
+            </select>
+          </div>
+          <div class="match-row">
+            <div class="definition">2. Cautious</div>
+            <select name="cautious" aria-label="Definition for cautious">
+              <option value="">Choose the match</option>
+            </select>
+          </div>
+          <div class="match-row">
+            <div class="definition">3. Resourceful</div>
+            <select name="resourceful" aria-label="Definition for resourceful">
+              <option value="">Choose the match</option>
+            </select>
+          </div>
+          <div class="match-row">
+            <div class="definition">4. Obstacle</div>
+            <select name="obstacle" aria-label="Definition for obstacle">
+              <option value="">Choose the match</option>
+            </select>
+          </div>
+          <div class="options-list" id="definition-options"></div>
+          <button class="primary" type="submit">Check matches</button>
+        </form>
+      </section>
+
+      <section class="card hidden" id="room-1">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Room 2</p>
+            <h2>Grammar Detective Bureau</h2>
+          </div>
+          <span class="tag">Fix It</span>
+        </div>
+        <p class="lead">Repair the sentence so it follows grammar rules. Keep meaning the same.</p>
+        <div class="prompt-box">
+          <p class="eyebrow">Flawed sentence</p>
+          <p class="quote">the dog wait by the door, he was hungry for treats</p>
+        </div>
+        <label class="field">
+          <span>Your corrected sentence</span>
+          <input type="text" id="grammar-input" placeholder="Write the corrected sentence" />
+        </label>
+        <button class="primary" id="grammar-check">Submit correction</button>
+      </section>
+
+      <section class="card hidden" id="room-2">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Room 3</p>
+            <h2>Figurative Language Lab</h2>
+          </div>
+          <span class="tag">Identify</span>
+        </div>
+        <p class="lead">Pick whether each clue is a simile, metaphor, or personification.</p>
+        <div id="figurative-list" class="stack"></div>
+        <button class="primary" id="figurative-check">Lock in answers</button>
+      </section>
+
+      <section class="card hidden" id="room-3">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Room 4</p>
+            <h2>Synonym–Antonym Arena</h2>
+          </div>
+          <span class="tag">Double Duty</span>
+        </div>
+        <p class="lead">For each target word, enter one synonym and one antonym.</p>
+        <form id="syn-ant-form" class="stack">
+          <div class="dual-field">
+            <div class="field">
+              <label>Word: Brave</label>
+              <input type="text" name="brave-syn" placeholder="Synonym (e.g., bold)" />
+              <input type="text" name="brave-ant" placeholder="Antonym (e.g., fearful)" />
+            </div>
+            <div class="field">
+              <label>Word: Tiny</label>
+              <input type="text" name="tiny-syn" placeholder="Synonym (e.g., small)" />
+              <input type="text" name="tiny-ant" placeholder="Antonym (e.g., huge)" />
+            </div>
+          </div>
+          <button class="primary" type="submit">Submit pairs</button>
+        </form>
+      </section>
+
+      <section class="card hidden" id="room-4">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Room 5</p>
+            <h2>Executive Story Spin</h2>
+          </div>
+          <span class="tag">Create</span>
+        </div>
+        <p class="lead">Write a 4–5 sentence micro-story that includes a forest, a mysterious sound, the word "reluctant," and one simile.</p>
+        <label class="field">
+          <span>Your story</span>
+          <textarea id="story-input" rows="6" placeholder="Spin your mini story here..."></textarea>
+        </label>
+        <button class="primary" id="story-submit">Complete the journey</button>
+      </section>
+
+      <section class="card hidden" id="win-screen">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Victory</p>
+            <h2>Chief Language Officer (CLO), Grade 6 Division</h2>
+          </div>
+          <span class="tag success">Unlocked</span>
+        </div>
+        <p class="lead">You escaped every room! Review your detective notes below and celebrate your word mastery.</p>
+        <div id="summary"></div>
+        <div class="actions">
+          <button class="secondary" id="restart">Play again</button>
+        </div>
+      </section>
+
+      <div id="feedback" role="status" aria-live="polite"></div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
