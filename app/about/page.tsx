@@ -2,11 +2,13 @@ import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import { caseStudies } from '../../lib/navigation';
 import type { Metadata } from 'next';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | About',
-  description: 'Mission, pilots, partners, and team behind Keyville.'
-};
+  description: 'Mission, pilots, partners, and team behind Keyville.',
+  path: '/about'
+});
 
 export default function AboutPage() {
   return (

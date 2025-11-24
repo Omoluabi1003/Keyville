@@ -1,11 +1,13 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Students',
-  description: 'Student journey with practice loops, accessibility-first controls, and AI nudges that build stamina.'
-};
+  description: 'Student journey with practice loops, accessibility-first controls, and AI nudges that build stamina.',
+  path: '/students'
+});
 
 export default function StudentsPage() {
   return (

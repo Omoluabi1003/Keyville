@@ -1,12 +1,14 @@
 import CTAButton from '../../components/CTAButton';
 import Section from '../../components/Section';
 import { caseStudies, heroStats } from '../../lib/navigation';
+import { buildMetadata } from '../../lib/metadata';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Landing',
-  description: 'Room-rotation writing practice with live AI feedback, telemetry, and teacher workflows ready for districts.'
-};
+  description: 'Room-rotation writing practice with live AI feedback, telemetry, and teacher workflows ready for districts.',
+  path: '/'
+});
 
 export default function LandingPage() {
   return (

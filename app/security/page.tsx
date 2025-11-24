@@ -1,11 +1,13 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Security',
-  description: 'Security posture, encryption, hosting, and district readiness.'
-};
+  description: 'Security posture, encryption, hosting, and district readiness.',
+  path: '/security'
+});
 
 export default function SecurityPage() {
   return (

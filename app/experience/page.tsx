@@ -1,14 +1,12 @@
 import type { Metadata } from 'next';
 import ExperienceSandbox from './ExperienceSandbox';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Experience Sandbox',
   description: 'Play a room-rotation micro-challenge, view AI feedback, and see telemetry without creating an account.',
-  openGraph: {
-    title: 'Experience the Keyville sandbox',
-    description: 'Try a guided micro-challenge with AI feedback and telemetry snapshots in under 90 seconds.'
-  }
-};
+  path: '/experience'
+});
 
 export default function ExperiencePage() {
   return (

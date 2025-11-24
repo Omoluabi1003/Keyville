@@ -2,11 +2,13 @@ import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import { caseStudies } from '../../lib/navigation';
 import type { Metadata } from 'next';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Teacher Mode',
-  description: 'Rotation workflow, rubric overlays, exports, accessibility, and pilot readiness for teachers.'
-};
+  description: 'Rotation workflow, rubric overlays, exports, accessibility, and pilot readiness for teachers.',
+  path: '/teacher'
+});
 
 export default function TeacherPage() {
   return (

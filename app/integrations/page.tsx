@@ -1,11 +1,13 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
+import { buildMetadata } from '../../lib/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: 'Keyville | Integrations',
-  description: 'SSO, roster sync, and API overview for quick district onboarding.'
-};
+  description: 'SSO, roster sync, and API overview for quick district onboarding.',
+  path: '/integrations'
+});
 
 export default function IntegrationsPage() {
   return (
