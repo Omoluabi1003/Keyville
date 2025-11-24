@@ -73,18 +73,33 @@ export default function ExperienceSandbox() {
   const [codename, setCodename] = useState('Skyline Fox');
   const [badge, setBadge] = useState('Rookie Detective');
   const [response, setResponse] = useState('');
-  const [completedRooms, setCompletedRooms] = useState<string[]>([]);
+  const [progressLevel, setProgressLevel] = useState(0);
+  const [currentRoomIndex, setCurrentRoomIndex] = useState(0);
   const [vocabAnswers, setVocabAnswers] = useState<Record<string, string>>({});
 
   const randomPrompt = useMemo(() => sandboxChallenge, []);
 
-  const toggleRoom = (roomId: string) => {
-    setCompletedRooms((prev) =>
-      prev.includes(roomId) ? prev.filter((id) => id !== roomId) : [...prev, roomId]
-    );
+  const systemCompletedRooms = useMemo(
+    () => rooms.slice(0, progressLevel).map((room) => room.id),
+    [progressLevel]
+  );
+
+  const completeCurrentRoom = () => {
+    const nextProgress = Math.max(progressLevel, currentRoomIndex + 1);
+    setProgressLevel(Math.min(nextProgress, rooms.length));
+    setCurrentRoomIndex((prev) => Math.min(prev + 1, rooms.length - 1));
   };
 
-  const progress = Math.round((completedRooms.length / rooms.length) * 100);
+  const goToRoom = (roomIndex: number) => {
+    setCurrentRoomIndex(roomIndex);
+  };
+
+  const redoRoom = (roomIndex: number) => {
+    setProgressLevel(roomIndex);
+    setCurrentRoomIndex(roomIndex);
+  };
+
+  const progress = Math.round((progressLevel / rooms.length) * 100);
 
   const correctVocabulary = vocabulary.filter((item) => vocabAnswers[item.word] === item.correct).length;
 
@@ -114,22 +129,55 @@ export default function ExperienceSandbox() {
       <div className="escape-grid" id="rooms">
         <div className="column">
           <Section title="Navigate the investigation" subtitle="Follow the four rooms in order">
+            <p className="small">
+              The system tracks completion. Finish the active room to move the progress bar, and
+              choose &ldquo;Redo room&rdquo; if you want the system to reopen a finished step.
+            </p>
             <div className="card-list">
-              {rooms.map((room) => (
+              {rooms.map((room, index) => {
+                const isComplete = systemCompletedRooms.includes(room.id);
+                const isActive = currentRoomIndex === index;
+
+                return (
                 <div className="card room-card" key={room.id}>
                   <div className="room-header">
                     <div>
                       <p className="small">Room focus: {room.focus}</p>
                       <h3>{room.title}</h3>
+                      <p className="small">
+                        System status:{' '}
+                        {isComplete ? 'Done' : isActive ? 'In progress—system watching' : 'Waiting in order'}
+                      </p>
                     </div>
-                    <button
-                      className="button secondary"
-                      onClick={() => toggleRoom(room.id)}
-                      aria-pressed={completedRooms.includes(room.id)}
-                      aria-label={`${room.action} for ${room.title}`}
-                    >
-                      {completedRooms.includes(room.id) ? 'Mark as redo' : 'Mark as done'}
-                    </button>
+                    <div className="room-actions">
+                      {isActive ? (
+                        <button
+                          className="button"
+                          onClick={completeCurrentRoom}
+                          aria-label={`System complete ${room.title} and move forward`}
+                          disabled={isComplete}
+                        >
+                          System: complete room
+                        </button>
+                      ) : (
+                        <button
+                          className="button secondary"
+                          onClick={() => goToRoom(index)}
+                          aria-label={`Open ${room.title} to work on it next`}
+                        >
+                          Go to this room
+                        </button>
+                      )}
+                      {isComplete && (
+                        <button
+                          className="button secondary"
+                          onClick={() => redoRoom(index)}
+                          aria-label={`Redo ${room.title}`}
+                        >
+                          Redo room
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <ul role="list" className="task-list">
                     {room.tasks.map((task) => (
@@ -138,7 +186,8 @@ export default function ExperienceSandbox() {
                   </ul>
                   <p className="small">Action: {room.action}</p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </Section>
 
