@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Keyville | Landing',
-  description: 'Room-rotation writing practice with live AI feedback, telemetry, and teacher workflows ready for districts.'
+  description: 'Room-rotation writing practice that feels like a game, with simple steps for middle schoolers.'
 };
 
 export default function LandingPage() {
@@ -13,27 +13,27 @@ export default function LandingPage() {
     <div>
       <section className="hero">
         <div>
-          <div className="badge">Writing growth in under 90 seconds</div>
-          <h1>Interactive writing rooms that actually fit classrooms</h1>
+          <div className="badge">Made for middle schoolers</div>
+          <h1>Study with quick quests, not endless tabs</h1>
           <p>
-            Keyville brings practice, AI feedback, and teacher-ready exports into one multi-page app. Students rotate through
-            focused rooms, teachers see stamina and growth, and districts keep privacy first.
+            Keyville turns writing practice into bite-sized challenges. You pick a quest, write for a few minutes, and get
+            friendly hints that help you try again. It stays simple so you can focus on your story.
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <CTAButton href="/experience" ariaLabel="Start sandbox experience">
-              Start sandbox
+            <CTAButton href="/experience" ariaLabel="Start a practice quest">
+              Start a quest
             </CTAButton>
-            <CTAButton href="/pricing" variant="secondary">
-              See pilot tiers
+            <CTAButton href="/students" variant="secondary">
+              See study tips
             </CTAButton>
           </div>
         </div>
         <div className="card" aria-label="Highlights">
-          <h3>Proof over promises</h3>
+          <h3>Why students like Keyville</h3>
           <ul role="list" style={{ paddingLeft: '1rem' }}>
-            <li>42k micro-challenges completed across pilots</li>
-            <li>Telemetry-ready exports for SIS ingestion</li>
-            <li>AI feedback tuned to middle school rubrics</li>
+            <li>Short, playful prompts feel like levels</li>
+            <li>Helpful hints arrive right away</li>
+            <li>No extra tabs or confusing menus</li>
           </ul>
           <div className="card-grid" style={{ marginTop: '1rem' }}>
             {heroStats.map((stat) => (
@@ -47,35 +47,52 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <Section title="Buyer journeys" subtitle="Routes for every persona to self-serve">
+      <Section title="Pick your next move" subtitle="Three simple paths to start learning">
         <div className="card-grid">
           <div className="card">
-            <h3>Students</h3>
-            <p className="small">Guided practice, voiceover-friendly controls, and AI nudges that respect age boundaries.</p>
-            <CTAButton href="/students" ariaLabel="View student route" variant="secondary">
-              View student path
+            <h3>Jump into a quest</h3>
+            <p className="small">Choose a prompt, set a short timer, and collect a badge for finishing.</p>
+            <CTAButton href="/experience" ariaLabel="Play a writing quest" variant="secondary">
+              Play now
             </CTAButton>
           </div>
           <div className="card">
-            <h3>Teachers</h3>
-            <p className="small">Classroom rotation workflow, exports, and rubric overlays teachers can rely on.</p>
-            <CTAButton href="/teacher" ariaLabel="View teacher route" variant="secondary">
-              Teacher dashboard
+            <h3>Collect easy tips</h3>
+            <p className="small">Grab quick reminders on how to brainstorm, draft, and revise without stress.</p>
+            <CTAButton href="/students" ariaLabel="See study tips" variant="secondary">
+              Study tips
             </CTAButton>
           </div>
           <div className="card">
-            <h3>District readiness</h3>
-            <p className="small">Privacy, security, and integrations with SSO and roster sync to launch quickly.</p>
-            <CTAButton href="/security" ariaLabel="View security posture" variant="secondary">
-              Review trust center
+            <h3>Share with your teacher</h3>
+            <p className="small">Show your teacher the Storycraft room so you can get gentle feedback together.</p>
+            <CTAButton href="/storycraft" ariaLabel="Open Storycraft" variant="secondary">
+              Open Storycraft
             </CTAButton>
           </div>
         </div>
       </Section>
 
+      <Section title="How it works" subtitle="Keep it light, keep it fun">
+        <div className="card-grid">
+          <div className="card">
+            <h3>1. Pick a quest</h3>
+            <p className="small">Select a prompt that sounds fun. You’ll only write for a few minutes at a time.</p>
+          </div>
+          <div className="card">
+            <h3>2. Write and tweak</h3>
+            <p className="small">Type your first try, then use the quick hints to add a detail or fix a sentence.</p>
+          </div>
+          <div className="card">
+            <h3>3. Celebrate small wins</h3>
+            <p className="small">Collect badges for finishing rounds and share your favorite lines with a friend.</p>
+          </div>
+        </div>
+      </Section>
+
       <Section
-        title="Case studies"
-        subtitle="District pilots that improved writing stamina and reduced teacher load"
+        title="Student wins"
+        subtitle="Real stories from kids who kept it simple"
         id="case-studies"
       >
         <div className="card-grid">
