@@ -722,6 +722,10 @@ function showWin() {
   confetti();
 }
 
+function printBadge() {
+  window.print();
+}
+
 function renderSummary() {
   const summary = document.getElementById('summary');
   const { answers } = state;
