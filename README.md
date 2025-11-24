@@ -1,24 +1,28 @@
 # Keyville
 
-A lightweight, browser-based language game for 6th graders: **The Lexicon Detective Escape Room**. Solve five rooms of vocabulary, grammar, figurative language, synonyms/antonyms, and storytelling to earn the Chief Language Officer badge.
+Multi-page Next.js web app for Keyville, showcasing room-rotation writing practice, teacher workflows, and district readiness.
 
-## Play locally
+## Getting started
 
-1. Open `index.html` directly in your browser (uses the assets in `docs/`), or run a simple static server:
+1. Install dependencies:
    ```bash
-   python3 -m http.server 8000
+   npm install
    ```
-2. Visit `http://localhost:8000` and continue your saved progress thanks to localStorage.
+2. Run the dev server:
+   ```bash
+   npm run dev
+   ```
+3. Visit `http://localhost:3000` to explore routes like `/experience`, `/students`, `/teacher`, `/pricing`, `/privacy`, and `/security`.
 
-## GitHub Pages
+## Production build
 
-The site is ready for GitHub Pages. Point your Pages configuration to the `docs/` folder in this repository. After enabling Pages, your game will be available at your repo's Pages URL.
-
-## Vercel
-
-Deployments on Vercel should rewrite all traffic to the `docs/` directory. The included `vercel.json` handles this automatically so `https://keyville.vercel.app/` serves `docs/index.html` instead of a 404 page.
+```bash
+npm run build
+npm start
+```
 
 ## Notes
-
-- The experience is a single-page app with built-in validation and friendly feedback for each room.
-- No external build step or dependencies are required.
+- Uses the Next.js App Router with shared navigation, footer, and per-route metadata.
+- Landing page links to a sandbox experience that demonstrates the room-rotation loop without authentication.
+- Privacy-first analytics and accessibility affordances (skip links, focus states, ARIA labels) are included.
+- Legacy static assets remain under `docs/` for reference.
