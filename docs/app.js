@@ -91,6 +91,10 @@ let grammarHintSpent = false;
 let soundtrackInterval = null;
 let soundtrackStep = 0;
 let transitionHideTimeout = null;
+let victoryPlayer = null;
+let victoryPlayerReady = false;
+let pendingVictorySound = false;
+let victoryFallbackTimeout = null;
 
 function loadState() {
   const stored = localStorage.getItem(stateKey);
@@ -271,6 +275,93 @@ function stopAmbient() {
   }
 }
 
+function createVictoryPlayer() {
+  if (victoryPlayer || !window.YT || !YT.Player) return;
+  victoryPlayer = new YT.Player('victory-sound-player', {
+    videoId: 'R8f18JFWDv4',
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1,
+    },
+    events: {
+      onReady: () => {
+        victoryPlayerReady = true;
+        victoryPlayer.setVolume(70);
+        if (pendingVictorySound && state.audioEnabled) {
+          playVictorySound();
+        }
+      },
+      onStateChange: (event) => {
+        if (!state.audioEnabled && event.data === YT.PlayerState.PLAYING) {
+          victoryPlayer.stopVideo();
+        }
+      },
+    },
+  });
+}
+
+function initVictorySound() {
+  if (!state.audioEnabled || victoryPlayer) return;
+  if (window.YT && YT.Player) {
+    createVictoryPlayer();
+    return;
+  }
+  const existingScript = document.getElementById('youtube-iframe-api');
+  if (!existingScript) {
+    const script = document.createElement('script');
+    script.id = 'youtube-iframe-api';
+    script.src = 'https://www.youtube.com/iframe_api';
+    document.body.appendChild(script);
+  }
+  window.onYouTubeIframeAPIReady = createVictoryPlayer;
+}
+
+function playVictorySound() {
+  if (!state.audioEnabled) return false;
+  try {
+    initVictorySound();
+    if (victoryPlayer && victoryPlayerReady) {
+      pendingVictorySound = false;
+      if (victoryFallbackTimeout) {
+        clearTimeout(victoryFallbackTimeout);
+        victoryFallbackTimeout = null;
+      }
+      victoryPlayer.seekTo(0);
+      victoryPlayer.playVideo();
+      return true;
+    }
+    pendingVictorySound = true;
+    if (!victoryFallbackTimeout) {
+      victoryFallbackTimeout = setTimeout(() => {
+        victoryFallbackTimeout = null;
+        if (pendingVictorySound) {
+          playCelebrationJingle();
+        }
+      }, 2000);
+    }
+    return false;
+  } catch (err) {
+    console.warn('Victory sound skipped', err);
+  }
+  return false;
+}
+
+function stopVictorySound() {
+  pendingVictorySound = false;
+  if (victoryFallbackTimeout) {
+    clearTimeout(victoryFallbackTimeout);
+    victoryFallbackTimeout = null;
+  }
+  try {
+    victoryPlayer?.stopVideo();
+  } catch (err) {
+    console.warn('Victory sound stop skipped', err);
+  }
+}
+
 function confetti() {
   const colors = ['#ffe6f4', '#a5b4fc', '#7ce3ff', '#7efccf', '#ffd6a5'];
   for (let i = 0; i < 24; i += 1) {
@@ -319,11 +410,11 @@ function playCelebrationJingle() {
 }
 
 function celebrateRoom(roomId) {
-  if (state.audioEnabled) {
-    startAmbient();
-  }
   confetti();
-  playCelebrationJingle();
+  const playedProvidedSound = playVictorySound();
+  if (!playedProvidedSound) {
+    playCelebrationJingle();
+  }
   const label = roomMap[roomId]?.title || 'Room cleared';
   showToast(`${label} cleared! Confetti keys collected.`);
 }
@@ -1401,8 +1492,10 @@ function setupEvents() {
       audioToggle.setAttribute('aria-pressed', state.audioEnabled.toString());
       if (state.audioEnabled) {
         startAmbient();
+        initVictorySound();
       } else {
         stopAmbient();
+        stopVictorySound();
       }
       saveState();
       audioToggle.textContent = state.audioEnabled ? 'Ambient audio: On' : 'Ambient audio';
@@ -1453,6 +1546,7 @@ function init() {
     audioToggle?.setAttribute('aria-pressed', 'true');
     audioToggle.textContent = 'Ambient audio: On';
     startAmbient();
+    initVictorySound();
   }
   if (state.completed) {
     showWin();
