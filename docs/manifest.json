@@ -1,9 +1,14 @@
 {
   "name": "Keyville: The Lexicon Detective Escape Room",
   "short_name": "Keyville",
-  "start_url": "/docs/index.html",
+  "description": "A grade-6 friendly escape-room language game with badges, music, and looping stages.",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#7c3aed",
-  "icons": []
+  "background_color": "#0d1530",
+  "theme_color": "#ff7ac2",
+  "icons": [
+    { "src": "icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" }
+  ]
 }

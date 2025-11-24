@@ -1,15 +1,15 @@
 :root {
-  --bg: #0d1117;
-  --card: #111827;
-  --accent: #7c3aed;
-  --accent-soft: #a78bfa;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --success: #16a34a;
+  --bg: #0d1530;
+  --card: #0f1f3d;
+  --accent: #ff7ac2;
+  --accent-soft: #fbcfe8;
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+  --success: #22c55e;
   --error: #ef4444;
-  --border: #1f2937;
-  --highlight: #1e293b;
-  --shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  --border: #23386b;
+  --highlight: #102347;
+  --shadow: 0 18px 50px rgba(5, 8, 20, 0.45);
 }
 
 * {
@@ -19,11 +19,24 @@
 body {
   margin: 0;
   font-family: 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.12), transparent 25%),
-    radial-gradient(circle at 80% 0%, rgba(34, 197, 94, 0.12), transparent 25%),
-    linear-gradient(180deg, #0f172a 0%, #0b1021 100%);
+  background: radial-gradient(circle at 20% 20%, rgba(255, 122, 194, 0.18), transparent 26%),
+    radial-gradient(circle at 78% 10%, rgba(56, 189, 248, 0.18), transparent 24%),
+    linear-gradient(180deg, #0d1530 0%, #0c1024 60%, #071023 100%);
   color: var(--text);
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120' width='120' height='120'%3E%3Cg fill='none' stroke='%23fbbf24' stroke-width='3' opacity='0.25'%3E%3Cpath d='M10 20c16 12 36 12 52 0s36-12 52 0'/%3E%3Ccircle cx='20' cy='80' r='8'/%3E%3Crect x='70' y='70' width='16' height='16' rx='4'/%3E%3Cpath d='M10 108l12-12 12 12 12-12 12 12'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.3;
+  z-index: 0;
+  transform: translate3d(0, 0, 0);
 }
 
 body.teacher-mode {
@@ -33,7 +46,9 @@ body.teacher-mode {
 .page {
   width: min(1100px, 95%);
   margin: 0 auto;
-  padding: 32px 0 56px;
+  padding: 32px 0 64px;
+  position: relative;
+  z-index: 1;
 }
 
 #transition-overlay {
@@ -71,7 +86,7 @@ body.teacher-mode {
 .transition-progress-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #22c55e, #7c3aed);
+  background: linear-gradient(90deg, #22c55e, #ff7ac2);
   transition: width 0.6s ease;
 }
 
@@ -158,12 +173,13 @@ h2 {
 
 .card,
 .progress-card {
-  background: var(--card);
+  background: linear-gradient(145deg, rgba(255, 122, 194, 0.06), rgba(56, 189, 248, 0.06)), var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 18px;
+  padding: 22px;
   box-shadow: var(--shadow);
   margin: 16px 0;
+  backdrop-filter: blur(4px);
 }
 
 .card-header {
@@ -193,7 +209,7 @@ h2 {
 }
 
 .badge {
-  background: linear-gradient(120deg, #22c55e, #7c3aed);
+  background: linear-gradient(120deg, #22c55e, #38bdf8, #ff7ac2);
   color: #fff;
   padding: 10px 14px;
   border-radius: 12px;
@@ -259,8 +275,8 @@ h2 {
 }
 
 .micro-badge {
-  background: rgba(124, 58, 237, 0.18);
-  color: #c4b5fd;
+  background: rgba(255, 122, 194, 0.18);
+  color: #fdf2f8;
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 6px 10px;
@@ -287,7 +303,7 @@ h2 {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #7c3aed, #22c55e);
+  background: linear-gradient(90deg, #38bdf8, #ff7ac2, #22c55e);
   transition: width 0.3s ease;
 }
 
@@ -419,7 +435,7 @@ textarea:focus {
 }
 
 .primary {
-  background: linear-gradient(120deg, #7c3aed, #22c55e);
+  background: linear-gradient(120deg, #38bdf8, #ff7ac2, #22c55e);
   color: #fff;
 }
 
@@ -655,9 +671,9 @@ body.teacher-mode .teacher-dashboard {
 }
 
 .toast {
-  background: #0f172a;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(255, 122, 194, 0.28));
   border: 1px solid var(--accent-soft);
-  color: #e0e7ff;
+  color: #f8fafc;
   padding: 10px 14px;
   border-radius: 12px;
   box-shadow: var(--shadow);
@@ -675,7 +691,7 @@ body.teacher-mode .teacher-dashboard {
   position: fixed;
   width: 8px;
   height: 14px;
-  background: #7c3aed;
+  background: #ff7ac2;
   top: -10px;
   left: 50%;
   opacity: 0.9;
