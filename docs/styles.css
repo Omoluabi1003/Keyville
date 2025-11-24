@@ -767,3 +767,75 @@ body.high-contrast .teacher-dashboard {
   border-color: #fff;
   box-shadow: none;
 }
+
+.map-card details summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.accordion-body {
+  display: grid;
+  gap: 8px;
+}
+
+.accordion-row {
+  border: 1px dashed rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.accordion-copy {
+  margin: 4px 0;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.map-node:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.progress-bar-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.microcopy {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.chip-pill.tier {
+  background: #1e293b;
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+}
+
+.admin-panel {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+}
+
+.room-status .room-chip[data-state="locked"] .chip-pill { background: #0f172a; color: #cbd5e1; }
+
+.micro-badge.hit { background: #0f172a; color: #22c55e; }
+.micro-badge.miss { background: #0f172a; color: #fbbf24; }
+
+.roster-row.trend-red { background: rgba(248,113,113,0.08); }
+.roster-row.trend-green { background: rgba(34,197,94,0.08); }
+
+.toast { outline: none; }
+
+.cold-open {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(56,189,248,0.08);
+}
