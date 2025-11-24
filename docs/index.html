@@ -9,7 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+  <body>
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
   <div id="transition-overlay" class="hidden" role="status" aria-live="polite">
     <div class="transition-card">
       <p class="eyebrow" id="transition-label">Transition</p>
@@ -52,10 +53,10 @@
                 <input type="text" id="player-team" name="player-team" placeholder="E.g., Team Griffin" autocomplete="organization" />
               </label>
               <div class="profile-actions">
-                <button class="primary" type="submit">Save badge</button>
-                <button class="secondary" type="button" id="start-button">Start / Resume adventure</button>
-                <button class="ghost" type="button" id="reset-progress">Reset progress</button>
-                <button class="ghost" type="button" id="new-case">New case</button>
+                <button class="primary" type="submit" aria-label="Save player badge">Save badge</button>
+                <button class="secondary" type="button" id="start-button" aria-label="Start or resume the active room">Start / Resume adventure</button>
+                <button class="ghost" type="button" id="reset-progress" aria-label="Reset progress with new questions">Reset progress</button>
+                <button class="ghost" type="button" id="new-case" aria-label="Load a new randomized case">New case</button>
               </div>
             </form>
             <div class="orientation">
@@ -76,6 +77,13 @@
             </div>
             <div class="progress">
               <div class="progress-fill" id="progress-fill" style="width: 20%"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="progress-percent">0% complete</span>
+              <span id="room-map-summary"></span>
+            </div>
+            <div class="compact-map" aria-label="Room map" role="navigation">
+              <div id="room-map" class="room-map"></div>
             </div>
             <div id="badge-shelf" class="badge-shelf" aria-live="polite"></div>
           </section>
@@ -115,7 +123,11 @@
               <span>Your corrected sentence</span>
               <input type="text" id="grammar-input" placeholder="Write the corrected sentence" />
             </label>
-            <button class="primary" id="grammar-check">Submit correction</button>
+            <p class="inline-hints" id="grammar-example"></p>
+            <div class="profile-actions">
+              <button class="secondary" id="grammar-hint" type="button" aria-label="Get a grammar hint">Get one hint</button>
+              <button class="primary" id="grammar-check">Submit correction</button>
+            </div>
             <div class="teacher-card" data-room="grammar"></div>
           </section>
 
@@ -184,6 +196,7 @@
             <div id="summary"></div>
             <div class="actions">
               <button class="secondary" id="restart">Play again</button>
+              <button class="primary" id="print-badge" aria-label="Print or share CLO badge">Print / Share badge</button>
             </div>
           </section>
 
@@ -213,8 +226,31 @@
             <div class="controls">
               <button class="secondary" type="button" id="teacher-toggle">Teacher mode</button>
               <button class="secondary" type="button" id="export-telemetry">Export telemetry</button>
+              <button class="secondary" type="button" id="export-telemetry-csv">Export CSV</button>
+              <button class="secondary" type="button" id="contrast-toggle" aria-pressed="false">High contrast</button>
             </div>
             <div class="telemetry" id="telemetry-readout"></div>
+            <section class="teacher-dashboard" id="teacher-dashboard" aria-live="polite">
+              <div class="card-header">
+                <div>
+                  <p class="eyebrow">Teacher Dashboard</p>
+                  <h3>Roster progress</h3>
+                </div>
+                <span class="tag">Admin</span>
+              </div>
+              <div id="teacher-roster" class="roster"></div>
+              <label class="field" aria-label="Manual room unlock">
+                <span>Manual unlock (teacher proofing)</span>
+                <select id="unlock-controls">
+                  <option value="" disabled selected>Choose room to unlock</option>
+                  <option value="0">Room 1</option>
+                  <option value="1">Room 2</option>
+                  <option value="2">Room 3</option>
+                  <option value="3">Room 4</option>
+                  <option value="4">Room 5</option>
+                </select>
+              </label>
+            </section>
           </section>
         </aside>
       </div>
