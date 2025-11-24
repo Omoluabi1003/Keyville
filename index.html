@@ -3,278 +3,173 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Lexicon Detective Escape Room</title>
-  <link rel="stylesheet" href="docs/styles.css" />
+  <title>Keyville · AI Language Playground</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="docs/styles.css" />
 </head>
-  <body>
-  <div id="toast-container" class="toast-container" aria-live="polite"></div>
-  <div id="transition-overlay" class="hidden" role="status" aria-live="polite" aria-hidden="true">
-    <div class="transition-card">
-      <p class="eyebrow" id="transition-label">Transition</p>
-      <h3 id="transition-title">Next room unlocked</h3>
-      <p id="transition-body">Get ready for the next challenge.</p>
-      <div class="transition-progress">
-        <div class="transition-progress-fill" id="transition-progress"></div>
-      </div>
-      <button class="transition-close" id="transition-close" aria-label="Dismiss transition overlay">Dismiss</button>
-    </div>
+<body>
+  <div class="background-layers" aria-hidden="true">
+    <div class="glow glow-one"></div>
+    <div class="glow glow-two"></div>
+    <div class="grid-overlay"></div>
   </div>
+
   <div class="page">
-    <header>
-      <div class="badge">Grade 6</div>
-      <div>
-        <p class="eyebrow">Language Game</p>
-        <h1>The Lexicon Detective Escape Room</h1>
-        <p class="subtitle">Crack every clue across endlessly looping rooms to earn your Chief Language Officer badge! Content and rubrics are locked to the canonical spec below.</p>
+    <header class="top-nav">
+      <div class="brand">
+        <span class="logo">K</span>
+        <div>
+          <p class="eyebrow">Keyville</p>
+          <strong>Language Arcade</strong>
+        </div>
+      </div>
+      <nav>
+        <a href="#experience">Experience</a>
+        <a href="#capabilities">Capabilities</a>
+        <a href="#cta">Get access</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="ghost">View docs</button>
+        <button class="primary">Launch Keyville</button>
       </div>
     </header>
 
     <main>
-      <div class="layout">
-        <div class="content">
-          <section class="card intro-card">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Player Hub</p>
-                <h2>Set your detective badge</h2>
-              </div>
-              <span class="tag">Start here</span>
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="label">AI-first language playground</div>
+          <h1>Where students, teachers, and founders ship expressive work together.</h1>
+          <p class="lead">Keyville pairs precision writing challenges with real-time AI guidance. Build stamina, ship drafts, and publish reflections all in one luminous workspace.</p>
+          <div class="cta-row">
+            <button class="primary">Start a live session</button>
+            <button class="secondary">Preview the escape room</button>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <p class="stat">42k+</p>
+              <p class="muted">micro-challenges solved</p>
             </div>
-            <p class="lead">Pick a code name and squad, then jump into the active room or restart with a clean slate.</p>
-            <form id="profile-form" class="profile-form">
-              <label class="field">
-                <span>Detective code name</span>
-                <input type="text" id="player-name" name="player-name" placeholder="E.g., Star Reader" autocomplete="name" />
-              </label>
-              <label class="field">
-                <span>Squad or homeroom (optional)</span>
-                <input type="text" id="player-team" name="player-team" placeholder="E.g., Team Griffin" autocomplete="organization" />
-              </label>
-              <div class="profile-actions">
-                <button class="primary" type="submit" aria-label="Save player badge">Save badge</button>
-                <button class="secondary" type="button" id="start-button" aria-label="Start or resume the active room">Start / Resume adventure</button>
-                <button class="ghost" type="button" id="reset-progress" aria-label="Reset progress with new questions">Reset progress</button>
-                <button class="ghost" type="button" id="new-case" aria-label="Load a new randomized case">New case</button>
-              </div>
-            </form>
-            <div class="orientation">
-              <p class="eyebrow">Game map</p>
-              <ul>
-                <li>5 rooms per stage with instant feedback and auto-save—stages keep rolling.</li>
-                <li>Use the Start / Resume button to jump back into the next task.</li>
-                <li>Need a fresh try? Reset progress without losing your badge.</li>
-                <li>Teacher mode reveals rubrics, answers, and rationales without touching the student flow.</li>
-                <li>Every 10 stages earns a special milestone badge to celebrate perseverance.</li>
-              </ul>
+            <div>
+              <p class="stat">18</p>
+              <p class="muted">district pilots underway</p>
             </div>
-          </section>
-
-          <section class="progress-card">
-            <div class="progress-label">
-              <span id="progress-text">Stage 1 · Room 1 of 5</span>
-              <span id="progress-hint">Vocabulary Vault</span>
+            <div>
+              <p class="stat">100%</p>
+              <p class="muted">browser-native, no installs</p>
             </div>
-            <div class="progress">
-              <div class="progress-fill" id="progress-fill" style="width: 20%"></div>
-            </div>
-            <div class="progress-meta">
-              <span id="progress-percent">0% complete</span>
-              <span id="room-map-summary"></span>
-            </div>
-            <div class="compact-map" aria-label="Room map" role="navigation">
-              <div id="room-map" class="room-map"></div>
-            </div>
-            <div id="badge-shelf" class="badge-shelf" aria-live="polite"></div>
-          </section>
-
-          <section class="card" id="room-0">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Room 1</p>
-                <h2>Vocabulary Vault</h2>
-              </div>
-              <span class="tag">Match &amp; Unlock</span>
-            </div>
-            <p class="lead" id="vocab-objective">Match each word with the correct definition to swing the vault door open.</p>
-            <form id="vocab-form" class="stack">
-              <div id="vocab-rows" class="stack"></div>
-              <div class="options-list" id="definition-options"></div>
-              <div class="inline-hints" id="vocab-inline-hint"></div>
-              <button class="primary" type="submit">Check matches</button>
-            </form>
-            <div class="teacher-card" data-room="vocab"></div>
-          </section>
-
-          <section class="card hidden" id="room-1">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Room 2</p>
-                <h2>Grammar Detective Bureau</h2>
-              </div>
-              <span class="tag">Fix It</span>
-            </div>
-            <p class="lead" id="grammar-objective">Repair the sentence so it follows grammar rules. Keep meaning the same.</p>
-            <div class="prompt-box">
-              <p class="eyebrow">Flawed sentence</p>
-              <p class="quote" id="grammar-flawed"></p>
-            </div>
-            <label class="field">
-              <span>Your corrected sentence</span>
-              <input type="text" id="grammar-input" placeholder="Write the corrected sentence" />
-            </label>
-            <p class="inline-hints" id="grammar-example"></p>
-            <div class="profile-actions">
-              <button class="secondary" id="grammar-hint" type="button" aria-label="Get a grammar hint">Get one hint</button>
-              <button class="primary" id="grammar-check">Submit correction</button>
-            </div>
-            <div class="teacher-card" data-room="grammar"></div>
-          </section>
-
-          <section class="card hidden" id="room-2">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Room 3</p>
-                <h2>Figurative Language Lab</h2>
-              </div>
-              <span class="tag">Identify</span>
-            </div>
-            <p class="lead" id="fig-objective">Pick whether each clue is a simile, metaphor, or personification.</p>
-            <div id="figurative-list" class="stack"></div>
-            <button class="primary" id="figurative-check">Lock in answers</button>
-            <div class="teacher-card" data-room="fig"></div>
-          </section>
-
-          <section class="card hidden" id="room-3">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Room 4</p>
-                <h2>Synonym–Antonym Arena</h2>
-              </div>
-              <span class="tag">Double Duty</span>
-            </div>
-            <p class="lead" id="syn-objective">For each target word, enter one synonym and one antonym.</p>
-            <form id="syn-ant-form" class="stack">
-              <div class="dual-field" id="syn-rows"></div>
-              <div class="inline-hints" id="syn-inline-hint"></div>
-              <button class="primary" type="submit">Submit pairs</button>
-            </form>
-            <div class="teacher-card" data-room="synAnt"></div>
-          </section>
-
-          <section class="card hidden" id="room-4">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Room 5</p>
-                <h2>Executive Story Spin</h2>
-              </div>
-              <span class="tag">Create</span>
-            </div>
-            <p class="lead" id="story-objective">Write a 4–5 sentence micro-story that includes a forest, a mysterious sound, the word "reluctant," and one simile.</p>
-            <div class="requirements" id="story-requirements"></div>
-            <div class="prompt-box simile-bank">
-              <p class="eyebrow">Simile bank</p>
-              <p id="simile-bank"></p>
-            </div>
-            <label class="field">
-              <span>Your story</span>
-              <textarea id="story-input" rows="6" placeholder="Spin your mini story here..."></textarea>
-            </label>
-            <button class="primary" id="story-submit">Complete the journey</button>
-            <div class="teacher-card" data-room="story"></div>
-          </section>
-
-          <section class="card hidden" id="win-screen">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Victory</p>
-                <h2>Chief Language Officer (CLO), Grade 6 Division</h2>
-              </div>
-              <span class="tag success">Unlocked</span>
-            </div>
-            <p class="lead">You escaped every room! Review your detective notes below and celebrate your word mastery.</p>
-            <div id="summary"></div>
-            <div class="actions">
-              <button class="secondary" id="restart">Replay this stage</button>
-              <button class="primary" id="next-stage" aria-label="Start the next stage">Next stage adventure</button>
-              <button class="primary" id="print-badge" aria-label="Print or share CLO badge">Print / Share badge</button>
-            </div>
-          </section>
-
-          <section class="card teacher-mode-panel">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Teacher controls</p>
-                <h2>Calibration / Notes</h2>
-              </div>
-              <span class="tag">For adults</span>
-            </div>
-            <p class="lead">Flip to teacher mode to reveal the built-in rubric and answer keys without disrupting the student flow.</p>
-            <div class="teacher-explainer">
-              <p><strong>What toggles on?</strong> The rubric for each room, expected answers, and rationale for why the prompt is structured that way.</p>
-              <p><strong>Why this matters:</strong> Ensures fidelity when used live. Teacher mode does not alter student data.</p>
-            </div>
-          </section>
-
-          <div id="feedback" role="status" aria-live="polite"></div>
+          </div>
         </div>
+        <div class="hero-panel" aria-label="Keyville product preview">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Live workspace</p>
+              <h3>Room rotation · Stage 6</h3>
+            </div>
+            <span class="pill pill-success">Active</span>
+          </div>
+          <div class="panel-body">
+            <div class="panel-glow"></div>
+            <div class="panel-card">
+              <p class="eyebrow">Today&apos;s arc</p>
+              <h4>Vocabulary → Grammar → Storycraft</h4>
+              <p class="muted">Guided steps nudge students to draft, refine, and reflect. Teachers unlock rubrics in one tap.</p>
+              <div class="chip-row">
+                <span class="chip">Instant feedback</span>
+                <span class="chip">Teacher mode</span>
+                <span class="chip">Auto-save</span>
+              </div>
+            </div>
+            <div class="panel-grid">
+              <div class="mini-card">
+                <p class="eyebrow">Progress</p>
+                <p class="stat">72%</p>
+                <div class="bar"><span style="width: 72%"></span></div>
+                <p class="muted">Stage 6 · Room 4</p>
+              </div>
+              <div class="mini-card">
+                <p class="eyebrow">Telemetry</p>
+                <p class="muted">Exportable CSV for every attempt.</p>
+                <button class="ghost">Download</button>
+              </div>
+              <div class="mini-card highlight">
+                <p class="eyebrow">Voice-over</p>
+                <p class="muted">Narrated prompts built-in for accessibility.</p>
+                <button class="secondary">Hear a sample</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <aside class="hud">
-          <section class="card toolkit">
-            <div class="card-header">
-              <div>
-                <p class="eyebrow">Detective Toolkit</p>
-                <h2>Room Status</h2>
-              </div>
-              <span class="tag">Live</span>
-            </div>
-            <p class="lead">Watch each room flip from locked, to active, to cleared as you play.</p>
-            <div id="status-line" class="status-line">Start with Room 1: Vocabulary Vault</div>
-            <div id="room-status" class="room-status"></div>
-            <div class="tips">
-              <p class="eyebrow">Quick tips</p>
-              <ul>
-                <li>Use the word bank before locking answers.</li>
-                <li>Feedback below the cards guides your next move.</li>
-                <li>Your progress auto-saves—refreshing won't reset the journey.</li>
-              </ul>
-            </div>
-            <div class="controls">
-              <button class="secondary" type="button" id="teacher-toggle">Teacher mode</button>
-              <button class="secondary" type="button" id="export-telemetry">Export telemetry</button>
-              <button class="secondary" type="button" id="export-telemetry-csv">Export CSV</button>
-              <button class="secondary" type="button" id="contrast-toggle" aria-pressed="false">High contrast</button>
-            </div>
-            <div class="telemetry" id="telemetry-readout"></div>
-            <section class="teacher-dashboard" id="teacher-dashboard" aria-live="polite">
-              <div class="card-header">
-                <div>
-                  <p class="eyebrow">Teacher Dashboard</p>
-                  <h3>Roster progress</h3>
-                </div>
-                <span class="tag">Admin</span>
-              </div>
-              <div id="teacher-roster" class="roster"></div>
-              <label class="field" aria-label="Manual room unlock">
-                <span>Manual unlock (teacher proofing)</span>
-                <select id="unlock-controls">
-                  <option value="" disabled selected>Choose room to unlock</option>
-                  <option value="0">Room 1</option>
-                  <option value="1">Room 2</option>
-                  <option value="2">Room 3</option>
-                  <option value="3">Room 4</option>
-                  <option value="4">Room 5</option>
-                </select>
-              </label>
-            </section>
-          </section>
-        </aside>
-      </div>
+      <section id="capabilities" class="feature-grid">
+        <div class="section-header">
+          <div class="label">Capabilities</div>
+          <h2>Everything runs in the browser. Every move is explainable.</h2>
+          <p class="muted">Keyville blends playful visuals with assessment-grade rigor so you can launch immersive learning moments without setup friction.</p>
+        </div>
+        <div class="grid">
+          <article class="feature-card">
+            <div class="icon">✦</div>
+            <h3>Adaptive room flow</h3>
+            <p>Rooms re-seed themselves with fresh prompts after every stage so practice never feels stale.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">☄︎</div>
+            <h3>Teacher superpowers</h3>
+            <p>Flip on rubric overlays, reveal exemplars, and export telemetry while keeping the student view intact.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">◉</div>
+            <h3>Storycraft studio</h3>
+            <p>Collect micro-stories and reflections, then publish student-ready PDFs with badges in seconds.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">➜</div>
+            <h3>API friendly</h3>
+            <p>Drop Keyville into your stack with simple hooks for roster syncs, analytics, and SSO.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="experience" class="timeline">
+        <div class="section-header">
+          <div class="label">Live experience</div>
+          <h2>Built for teams that care about creativity and clarity.</h2>
+          <p class="muted">From the first badge to full escape-room loops, Keyville keeps writers moving with gentle coaching and bold aesthetics.</p>
+        </div>
+        <div class="timeline-grid">
+          <div class="timeline-step">
+            <p class="eyebrow">01 · onboard</p>
+            <h4>Pick a codename</h4>
+            <p class="muted">Students personalize their badge and join squads in under thirty seconds.</p>
+          </div>
+          <div class="timeline-step">
+            <p class="eyebrow">02 · solve</p>
+            <h4>Unlock the rooms</h4>
+            <p class="muted">Vocabulary, grammar, figurative language, and story challenges rotate with instant feedback.</p>
+          </div>
+          <div class="timeline-step">
+            <p class="eyebrow">03 · celebrate</p>
+            <h4>Publish the win</h4>
+            <p class="muted">Teacher mode shows evidence, rubrics, and exportable artifacts for portfolios.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="cta" class="cta">
+        <div>
+          <div class="label">Ready for lift-off</div>
+          <h2>Invite your team to Keyville.</h2>
+          <p class="muted">We&apos;ll set up a live workspace for your district, startup, or creative studio within 24 hours.</p>
+        </div>
+        <div class="cta-actions">
+          <input type="email" placeholder="work email" aria-label="Work email" />
+          <button class="primary">Request a demo</button>
+        </div>
+      </section>
     </main>
   </div>
-  <script src="docs/gameData.js"></script>
-  <script src="docs/app.js"></script>
 </body>
 </html>
