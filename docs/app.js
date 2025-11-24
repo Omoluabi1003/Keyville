@@ -13,7 +13,9 @@ const defaultState = {
     attempts: {},
     durations: {},
     misses: {},
+    clearTimes: {},
   },
+  unlockedRooms: [],
 };
 
 const feedbackBox = document.getElementById('feedback');
@@ -36,6 +38,16 @@ const transitionTitle = document.getElementById('transition-title');
 const transitionBody = document.getElementById('transition-body');
 const transitionProgress = document.getElementById('transition-progress');
 const transitionLabel = document.getElementById('transition-label');
+const toastContainer = document.getElementById('toast-container');
+const progressPercent = document.getElementById('progress-percent');
+const roomMapList = document.getElementById('room-map');
+const highContrastToggle = document.getElementById('contrast-toggle');
+const grammarExample = document.getElementById('grammar-example');
+const grammarHintButton = document.getElementById('grammar-hint');
+const teacherDashboard = document.getElementById('teacher-dashboard');
+const teacherRoster = document.getElementById('teacher-roster');
+const unlockControls = document.getElementById('unlock-controls');
+const roomMapSummary = document.getElementById('room-map-summary');
 
 const answerKeys = ['vocab', 'grammar', 'fig', 'synAnt', 'story'];
 let currentCase = null;
@@ -44,6 +56,7 @@ let roomMap = {};
 let state = loadState();
 let roomStartTime = null;
 let audioContext = null;
+let grammarHintSpent = false;
 
 function loadState() {
   const stored = localStorage.getItem(stateKey);
@@ -171,10 +184,24 @@ function confetti() {
   }
 }
 
+function showToast(message) {
+  if (!toastContainer) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  toastContainer.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 50);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 2500);
+}
+
 function showRoom(index) {
+  const allowedIndex = Math.min(index, state.currentRoom);
   document.querySelectorAll('.card').forEach((room) => {
     if (room.id.startsWith('room-')) {
-      if (room.id === `room-${index}`) {
+      if (room.id === `room-${allowedIndex}`) {
         room.classList.remove('hidden');
       } else {
         room.classList.add('hidden');
@@ -183,9 +210,15 @@ function showRoom(index) {
       room.classList.add('hidden');
     }
   });
-  progressHint.textContent = roomMeta[index]?.title || 'CLO Achieved';
-  progressText.textContent = `Room ${index + 1} of 5`;
-  progressFill.style.width = `${((index + 1) / 5) * 100}%`;
+  const progressRatio = (state.completed
+    ? 5
+    : Math.max(allowedIndex, Object.keys(state.answers).length)) / 5;
+  progressHint.textContent = roomMeta[allowedIndex]?.title || 'CLO Achieved';
+  progressText.textContent = `Room ${allowedIndex + 1} of 5`;
+  progressFill.style.width = `${progressRatio * 100}%`;
+  if (progressPercent) {
+    progressPercent.textContent = `${Math.round(progressRatio * 100)}% complete`;
+  }
   refreshRoomStatus();
   updateStartButtonLabel();
   roomStartTime = Date.now();
@@ -224,6 +257,16 @@ function populateVocabulary() {
       });
   });
   document.getElementById('vocab-inline-hint').textContent = roomMap.vocab.objective;
+  updateVocabCheckState();
+}
+
+function updateVocabCheckState() {
+  const button = document.querySelector('#vocab-form .primary');
+  const selects = document.querySelectorAll('#vocab-form select');
+  if (!button) return;
+  const allChosen = Array.from(selects).every((sel) => sel.value);
+  button.disabled = !allChosen;
+  button.setAttribute('aria-disabled', (!allChosen).toString());
 }
 
 function populateFigurative() {
@@ -327,9 +370,25 @@ function validateVocabulary(formData) {
     recordAttempt('vocab', 'incomplete');
     return null;
   }
+  document.querySelectorAll('#vocab-rows .match-row').forEach((row) => {
+    row.dataset.correct = '';
+  });
   const isCorrect = roomMap.vocab.dataset.words.every((def) => answers[def.id] === def.id);
   if (!isCorrect) {
-    setFeedback('Close! Re-read the bank—one or more pairings are off.', 'error');
+    document.querySelectorAll('#vocab-rows .match-row').forEach((row) => {
+      const select = row.querySelector('select');
+      const chosen = select?.value;
+      const key = select?.name;
+      if (!key) return;
+      if (chosen !== key) {
+        row.dataset.correct = 'false';
+        const hint = roomMap.vocab.dataset.words.find((word) => word.id === key)?.definition || '';
+        row.querySelector('.definition').setAttribute('aria-label', `Incorrect match. Hint: ${hint}`);
+      } else {
+        row.dataset.correct = 'true';
+      }
+    });
+    setFeedback('Close! Re-read the bank—highlighted rows are mismatched. Use the hints to adjust.', 'error');
     recordMiss('vocab');
     return null;
   }
@@ -360,7 +419,11 @@ function validateGrammar(value) {
     recordAttempt('grammar', 'success');
     return cleaned;
   }
-  setFeedback('Almost. Check capitalization, verb tense, and the cause-and-effect connector.', 'error');
+  const hint = grammarHintSpent
+    ? ''
+    : `Hint: Start with a capital letter, keep "because" for cause/effect, and finish with punctuation. Try: ${roomMap.grammar.dataset.exemplar}`;
+  grammarHintSpent = true;
+  setFeedback(`Almost. Check capitalization, verb tense, and the cause-and-effect connector. ${hint}`, 'error');
   recordMiss('grammar');
   return null;
 }
@@ -402,6 +465,11 @@ function validateSynAnt(formData) {
     }
     if (syn.toLowerCase() === ant.toLowerCase()) {
       setFeedback('Synonym and antonym should be different ideas.', 'error');
+      recordMiss('synAnt');
+      return null;
+    }
+    if (syn.toLowerCase() === word.toLowerCase() || ant.toLowerCase() === word.toLowerCase()) {
+      setFeedback('Avoid reusing the target word as the answer—reach for a true synonym/antonym.', 'error');
       recordMiss('synAnt');
       return null;
     }
@@ -467,9 +535,11 @@ function goToNextRoom() {
     showTransition(state.currentRoom + 1);
     state.currentRoom += 1;
     saveState();
+    showToast(`Next room unlocked: ${roomMeta[state.currentRoom].title}`);
     setTimeout(() => showRoom(state.currentRoom), 900);
   } else {
     state.completed = true;
+    showToast('All rooms cleared! Badge unlocked.');
     showWin();
   }
 }
@@ -540,7 +610,7 @@ function renderSummary() {
   [badge, vocab, grammar, figurative, pairs, story].forEach((item) => summary.appendChild(item));
 }
 
-function restartGame({ keepPlayer = true, randomizeCase = false } = {}) {
+function restartGame({ keepPlayer = true, randomizeCase = true } = {}) {
   const player = keepPlayer ? state.player : { ...defaultState.player };
   state = {
     ...defaultState,
@@ -559,6 +629,7 @@ function roomStateForIndex(index) {
   if (state.completed) return 'done';
   if (state.answers?.[answerKeys[index]]) return 'done';
   if (state.currentRoom === index) return 'active';
+  if (state.unlockedRooms.includes(index)) return 'active';
   return state.currentRoom > index ? 'done' : 'locked';
 }
 
@@ -590,8 +661,43 @@ function refreshStatusLine() {
   statusLine.className = 'status-line';
 }
 
+function renderRoomMap() {
+  if (!roomMapList) return;
+  roomMapList.innerHTML = roomMeta
+    .map((room, idx) => {
+      const stateLabel = roomStateForIndex(idx);
+      const disabled = stateLabel === 'locked';
+      const ariaLock = disabled ? 'Locked' : 'Open';
+      return `
+        <button class="map-node" data-room-index="${idx}" ${disabled ? 'disabled' : ''} aria-label="${ariaLock} room ${idx + 1} ${room.title}">
+          <span class="map-title">${idx + 1}. ${room.tag}</span>
+          <span class="chip-pill ${stateLabel}">${stateLabel === 'done' ? 'Cleared' : stateLabel === 'active' ? 'Active' : 'Locked'}</span>
+        </button>
+      `;
+    })
+    .join('');
+  roomMapList.querySelectorAll('.map-node').forEach((node) => {
+    node.addEventListener('click', () => {
+      const idx = Number(node.dataset.roomIndex);
+      if (roomStateForIndex(idx) === 'locked') return;
+      const target = idx <= state.currentRoom ? idx : state.currentRoom;
+      showRoom(target);
+    });
+  });
+}
+
+function renderMapSummary() {
+  if (!roomMapSummary) return;
+  const cleared = answerKeys.filter((key) => state.answers?.[key]).length;
+  const label = state.completed ? 'All rooms cleared!' : `${cleared}/5 rooms cleared. Locked rooms stay hidden until you finish the current one.`;
+  roomMapSummary.textContent = label;
+}
+
 function refreshRoomStatus() {
   renderRoomStatus();
+  renderRoomMap();
+  renderMapSummary();
+  renderTeacherDashboard();
   refreshStatusLine();
 }
 
@@ -661,14 +767,29 @@ function recordMiss(roomId) {
   recordAttempt(roomId, 'miss');
 }
 
+function recordClear(roomId) {
+  const start = roomStartTime;
+  const duration = start ? Math.round((Date.now() - start) / 1000) : null;
+  if (duration !== null) {
+    state.telemetry.clearTimes[roomId] = state.telemetry.clearTimes[roomId] || [];
+    state.telemetry.clearTimes[roomId].push(duration);
+  }
+  saveState();
+  updateTelemetryReadout();
+}
+
 function updateTelemetryReadout() {
-  const { attempts, durations, misses } = state.telemetry;
+  const { attempts, durations, misses, clearTimes } = state.telemetry;
   const lines = Object.keys(attempts).map((roomId) => {
     const tries = attempts[roomId];
     const missCount = misses[roomId] || 0;
     const times = durations[roomId] || [];
     const avg = times.length ? `${Math.round(times.reduce((a, b) => a + b, 0) / times.length)}s avg` : '—';
-    return `${roomMap[roomId]?.title || roomId}: ${tries} attempts, ${missCount} misses, ${avg}`;
+    const clears = clearTimes[roomId] || [];
+    const clearAvg = clears.length
+      ? `${Math.round(clears.reduce((a, b) => a + b, 0) / clears.length)}s to clear`
+      : '— to clear';
+    return `${roomMap[roomId]?.title || roomId}: ${tries} attempts, ${missCount} misses, ${avg}, ${clearAvg}`;
   });
   telemetryReadout.textContent = lines.join('\n');
 }
@@ -676,7 +797,7 @@ function updateTelemetryReadout() {
 function exportTelemetry() {
   const payload = {
     version: gameData.version,
-    player: state.player,
+    player: { team: state.player.team || 'anonymous', name: 'redacted' },
     telemetry: state.telemetry,
     timestamp: new Date().toISOString(),
   };
@@ -694,10 +815,92 @@ function exportTelemetry() {
   setFeedback('Telemetry exported. Clipboard + download ready.', 'success');
 }
 
+function printBadge() {
+  const badgeWindow = window.open('', '_blank', 'width=480,height=640');
+  const playerLabel = playerGreeting();
+  const template = `
+    <style>
+      body { font-family: 'Nunito', Arial, sans-serif; background: #0f172a; color: #e5e7eb; padding: 24px; }
+      .badge-print { border: 2px solid #22c55e; border-radius: 16px; padding: 20px; text-align: center; background: linear-gradient(140deg, rgba(124,58,237,0.3), rgba(34,197,94,0.3)); }
+      h1 { margin: 8px 0; }
+      p { margin: 6px 0; }
+    </style>
+    <div class="badge-print">
+      <p class="eyebrow">Chief Language Officer</p>
+      <h1>${playerLabel}</h1>
+      <p>Keyville Escape — ${new Date().toLocaleDateString()}</p>
+      <p>Badge unlocked by clearing all rooms with academic fidelity.</p>
+    </div>
+  `;
+  badgeWindow.document.write(template);
+  badgeWindow.document.close();
+  badgeWindow.focus();
+  badgeWindow.print();
+}
+
+function exportTelemetryCsv() {
+  const headers = ['room', 'attempts', 'misses', 'avg_duration_s', 'avg_clear_s'];
+  const lines = [headers.join(',')];
+  answerKeys.forEach((key) => {
+    const attempts = state.telemetry.attempts[key] || 0;
+    const misses = state.telemetry.misses[key] || 0;
+    const durations = state.telemetry.durations[key] || [];
+    const clears = state.telemetry.clearTimes[key] || [];
+    const avgDur = durations.length
+      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+      : '';
+    const avgClear = clears.length
+      ? Math.round(clears.reduce((a, b) => a + b, 0) / clears.length)
+      : '';
+    lines.push([key, attempts, misses, avgDur, avgClear].join(','));
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'keyville-telemetry.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setFeedback('CSV exported for teacher dashboard.', 'success');
+}
+
+function renderTeacherDashboard() {
+  if (!teacherRoster) return;
+  const rows = roomMeta
+    .map((room, idx) => {
+      const key = answerKeys[idx];
+      const attempts = state.telemetry.attempts[key] || 0;
+      const misses = state.telemetry.misses[key] || 0;
+      const clears = state.telemetry.clearTimes[key] || [];
+      const clearAvg = clears.length
+        ? `${Math.round(clears.reduce((a, b) => a + b, 0) / clears.length)}s`
+        : '—';
+      return `<div class="roster-row"><span>${idx + 1}. ${room.title}</span><span>${attempts} tries · ${misses} misses · ${clearAvg} to clear</span></div>`;
+    })
+    .join('');
+  const rosterLabel = state.player.team
+    ? `${state.player.team} — ${state.player.name || 'Detective'}`
+    : state.player.name || 'Detective';
+  teacherRoster.innerHTML = `<p class="eyebrow">Current badge</p><p class="teacher-label">${rosterLabel || 'Not set'}</p>${rows}`;
+}
+
+function unlockRoomAt(index) {
+  if (index < 0 || index > 4) return;
+  state.unlockedRooms = Array.from(new Set([...state.unlockedRooms, index]));
+  state.currentRoom = index;
+  saveState();
+  refreshRoomStatus();
+  showRoom(index);
+  setFeedback(`Teacher override: Room ${index + 1} unlocked.`, 'info');
+}
+
 function hydrateContent() {
   document.getElementById('vocab-objective').textContent = roomMap.vocab.objective;
   document.getElementById('grammar-objective').textContent = roomMap.grammar.objective;
   document.getElementById('grammar-flawed').textContent = roomMap.grammar.dataset.flawed;
+  if (grammarExample) grammarExample.textContent = `Exemplar format: ${roomMap.grammar.dataset.exemplar}`;
   document.getElementById('fig-objective').textContent = roomMap.fig.objective;
   document.getElementById('syn-objective').textContent = roomMap.synAnt.objective;
   document.getElementById('story-objective').textContent = roomMap.story.objective;
@@ -744,7 +947,7 @@ function setupEvents() {
   });
 
   resetButton.addEventListener('click', () => {
-    restartGame({ keepPlayer: true });
+    restartGame({ keepPlayer: true, randomizeCase: true });
     updateStartButtonLabel();
   });
 
@@ -759,8 +962,13 @@ function setupEvents() {
     if (result) {
       state.answers.vocab = result;
       saveState();
+      recordClear('vocab');
       goToNextRoom();
     }
+  });
+
+  document.querySelectorAll('#vocab-form select').forEach((select) => {
+    select.addEventListener('change', updateVocabCheckState);
   });
 
   document.getElementById('grammar-check').addEventListener('click', () => {
@@ -769,15 +977,29 @@ function setupEvents() {
     if (result) {
       state.answers.grammar = result;
       saveState();
+      recordClear('grammar');
       goToNextRoom();
     }
   });
+
+  document.getElementById('grammar-input').addEventListener('input', () => {
+    grammarHintSpent = false;
+  });
+
+  if (grammarHintButton) {
+    grammarHintButton.addEventListener('click', () => {
+      const exemplar = roomMap.grammar.dataset.exemplar;
+      grammarHintSpent = true;
+      setFeedback(`Hint unlocked: Start with a capital letter, keep the comma after the opener if needed, and match the exemplar style: ${exemplar}`, 'info');
+    });
+  }
 
   document.getElementById('figurative-check').addEventListener('click', () => {
     const result = validateFigurative();
     if (result) {
       state.answers.fig = result;
       saveState();
+      recordClear('fig');
       goToNextRoom();
     }
   });
@@ -789,6 +1011,7 @@ function setupEvents() {
     if (result) {
       state.answers.synAnt = result;
       saveState();
+      recordClear('synAnt');
       goToNextRoom();
     }
   });
@@ -803,13 +1026,32 @@ function setupEvents() {
     if (result) {
       state.answers.story = result;
       saveState();
+      recordClear('story');
       goToNextRoom();
     }
   });
 
   document.getElementById('restart').addEventListener('click', restartGame);
+  document.getElementById('print-badge').addEventListener('click', printBadge);
   teacherToggle.addEventListener('click', toggleTeacherMode);
   exportTelemetryButton.addEventListener('click', exportTelemetry);
+  document.getElementById('export-telemetry-csv')?.addEventListener('click', exportTelemetryCsv);
+  if (highContrastToggle) {
+    highContrastToggle.addEventListener('click', () => {
+      document.body.classList.toggle('high-contrast');
+      highContrastToggle.setAttribute(
+        'aria-pressed',
+        document.body.classList.contains('high-contrast').toString(),
+      );
+    });
+  }
+
+  if (unlockControls) {
+    unlockControls.addEventListener('change', (e) => {
+      const idx = Number(e.target.value);
+      if (!Number.isNaN(idx)) unlockRoomAt(idx);
+    });
+  }
 }
 
 function init() {
