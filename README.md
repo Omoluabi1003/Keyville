@@ -14,6 +14,10 @@ A lightweight, browser-based language game for 6th graders: **The Lexicon Detect
 
 The site is ready for GitHub Pages. Point your Pages configuration to the `docs/` folder in this repository. After enabling Pages, your game will be available at your repo's Pages URL.
 
+## Vercel
+
+Deployments on Vercel should rewrite all traffic to the `docs/` directory. The included `vercel.json` handles this automatically so `https://keyville.vercel.app/` serves `docs/index.html` instead of a 404 page.
+
 ## Notes
 
 - The experience is a single-page app with built-in validation and friendly feedback for each room.
