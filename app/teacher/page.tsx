@@ -1,6 +1,7 @@
 import Section from '../../components/Section';
 import CTAButton from '../../components/CTAButton';
 import { caseStudies } from '../../lib/navigation';
+import KidModePlanner from '../../components/KidModePlanner';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -46,6 +47,13 @@ export default function TeacherPage() {
             <p className="small">VoiceOver labels, keyboard-friendly controls, and dyslexia-friendly spacing options.</p>
           </div>
         </div>
+      </Section>
+
+      <Section
+        title="Kid Mode content layer"
+        subtitle="Switch to 6th-grade safe themes and preview the prompts students will see"
+      >
+        <KidModePlanner />
       </Section>
 
       <Section title="Exports and governance" subtitle="Proof you can send to admins without reformatting">
