@@ -114,50 +114,70 @@ const gameData = {
   ],
   pools: {
     vocabularySets: [
-      [
-        { id: 'reluctant', label: 'Reluctant', definition: 'Hesitant or unwilling to do something right away.' },
-        { id: 'intricate', label: 'Intricate', definition: 'Very detailed or complicated with many connected parts.' },
-        { id: 'ascend', label: 'Ascend', definition: 'To move or climb upward.' },
-        { id: 'confer', label: 'Confer', definition: 'To discuss ideas together to make a decision.' },
-      ],
-      [
-        { id: 'resilient', label: 'Resilient', definition: 'Able to bounce back or recover quickly.' },
-        { id: 'eerie', label: 'Eerie', definition: 'Strange in a way that causes unease.' },
-        { id: 'precise', label: 'Precise', definition: 'Exact and accurate in detail.' },
-        { id: 'observe', label: 'Observe', definition: 'To notice or watch carefully.' },
-      ],
+      {
+        tier: 'core',
+        words: [
+          { id: 'reluctant', label: 'Reluctant', definition: 'Hesitant or unwilling to do something right away.' },
+          { id: 'intricate', label: 'Intricate', definition: 'Very detailed or complicated with many connected parts.' },
+          { id: 'ascend', label: 'Ascend', definition: 'To move or climb upward.' },
+          { id: 'confer', label: 'Confer', definition: 'To discuss ideas together to make a decision.' },
+        ],
+      },
+      {
+        tier: 'challenge',
+        words: [
+          { id: 'resilient', label: 'Resilient', definition: 'Able to bounce back or recover quickly.' },
+          { id: 'eerie', label: 'Eerie', definition: 'Strange in a way that causes unease.' },
+          { id: 'precise', label: 'Precise', definition: 'Exact and accurate in detail.' },
+          { id: 'observe', label: 'Observe', definition: 'To notice or watch carefully.' },
+        ],
+      },
     ],
     grammarPrompts: [
       {
+        tier: 'core',
         flawed: 'the detective hurry through the report because the final clue were hidden in the last paragraph',
         exemplar: 'The detective hurried through the report because the final clue was hidden in the last paragraph.',
       },
       {
+        tier: 'challenge',
         flawed: 'because the signal were weak the team dont notice the final message on the radio',
         exemplar: 'Because the signal was weak, the team did not notice the final message on the radio.',
       },
     ],
     figurativeSets: [
-      [
-        { id: 'flame', clue: 'The idea spread like wildfire through the squad.', answer: 'simile' },
-        { id: 'thief', clue: 'Time is a thief that steals our chances.', answer: 'metaphor' },
-        { id: 'alarm', clue: 'The alarm clock yelled at me to wake up.', answer: 'personification' },
-      ],
-      [
-        { id: 'shadow', clue: 'Doubt crept into the room and sat beside us.', answer: 'personification' },
-        { id: 'ice', clue: 'Her stare was as icy as winter wind.', answer: 'simile' },
-        { id: 'anchor', clue: 'Hope is the anchor that held the crew steady.', answer: 'metaphor' },
-      ],
+      {
+        tier: 'core',
+        prompts: [
+          { id: 'flame', clue: 'The idea spread like wildfire through the squad.', answer: 'simile' },
+          { id: 'thief', clue: 'Time is a thief that steals our chances.', answer: 'metaphor' },
+          { id: 'alarm', clue: 'The alarm clock yelled at me to wake up.', answer: 'personification' },
+        ],
+      },
+      {
+        tier: 'challenge',
+        prompts: [
+          { id: 'shadow', clue: 'Doubt crept into the room and sat beside us.', answer: 'personification' },
+          { id: 'ice', clue: 'Her stare was as icy as winter wind.', answer: 'simile' },
+          { id: 'anchor', clue: 'Hope is the anchor that held the crew steady.', answer: 'metaphor' },
+        ],
+      },
     ],
     synonymTargets: [
-      [
-        { word: 'brave', examples: { syn: 'courageous', ant: 'fearful' } },
-        { word: 'fragile', examples: { syn: 'delicate', ant: 'sturdy' } },
-      ],
-      [
-        { word: 'curious', examples: { syn: 'inquisitive', ant: 'uninterested' } },
-        { word: 'sturdy', examples: { syn: 'strong', ant: 'weak' } },
-      ],
+      {
+        tier: 'core',
+        targets: [
+          { word: 'brave', examples: { syn: 'courageous', ant: 'fearful' } },
+          { word: 'fragile', examples: { syn: 'delicate', ant: 'sturdy' } },
+        ],
+      },
+      {
+        tier: 'challenge',
+        targets: [
+          { word: 'curious', examples: { syn: 'inquisitive', ant: 'uninterested' } },
+          { word: 'sturdy', examples: { syn: 'strong', ant: 'weak' } },
+        ],
+      },
     ],
     simileBank: [
       'like a flashlight cutting through smoke',

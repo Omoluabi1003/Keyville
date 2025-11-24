@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
 </head>
   <body>
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
@@ -28,12 +29,31 @@
         <p class="eyebrow">Language Game</p>
         <h1>The Lexicon Detective Escape Room</h1>
         <p class="subtitle">Crack every clue across five rooms to earn your Chief Language Officer badge! Content and rubrics are locked to the canonical spec below.</p>
+        <div class="cold-open" role="note">
+          <p class="eyebrow">Cold open</p>
+          <p>The lights flicker. Headquarters radios in: “Keyville needs a Chief Language Officer.” You are dropped into an active investigation with only your detective kit and the rooms ahead.</p>
+        </div>
       </div>
     </header>
 
     <main>
       <div class="layout">
         <div class="content">
+          <section class="card map-card" aria-label="Room accordion navigation">
+            <div class="card-header">
+              <div>
+                <p class="eyebrow">Active-room focus</p>
+                <h2>Navigate the investigation</h2>
+              </div>
+              <span class="tag">Map</span>
+            </div>
+            <p class="lead">Open the accordion to jump between rooms. Only the active room stays expanded; others collapse with status chips (Locked, Active, Cleared).</p>
+            <details id="map-accordion" open>
+              <summary aria-label="Toggle room map">Room map</summary>
+              <div id="accordion-body" class="accordion-body"></div>
+            </details>
+          </section>
+
           <section class="card intro-card">
             <div class="card-header">
               <div>
@@ -57,6 +77,7 @@
                 <button class="secondary" type="button" id="start-button" aria-label="Start or resume the active room">Start / Resume adventure</button>
                 <button class="ghost" type="button" id="reset-progress" aria-label="Reset progress with new questions">Reset progress</button>
                 <button class="ghost" type="button" id="new-case" aria-label="Load a new randomized case">New case</button>
+                <button class="ghost" type="button" id="practice-mode" aria-label="Launch a demo run without saving">Demo run</button>
               </div>
             </form>
             <div class="orientation">
@@ -82,6 +103,10 @@
               <span id="progress-percent">0% complete</span>
               <span id="room-map-summary"></span>
             </div>
+            <div class="progress-bar-meta" aria-live="polite">
+              <p id="mastery-label" class="eyebrow">Room mastery: 0%</p>
+              <p class="microcopy" id="mastery-copy">Start a task to see live mastery feedback.</p>
+            </div>
             <div class="compact-map" aria-label="Room map" role="navigation">
               <div id="room-map" class="room-map"></div>
             </div>
@@ -101,6 +126,7 @@
               <div id="vocab-rows" class="stack"></div>
               <div class="options-list" id="definition-options"></div>
               <div class="inline-hints" id="vocab-inline-hint"></div>
+              <div class="inline-hints" id="vocab-microcopy" aria-live="polite"></div>
               <button class="primary" type="submit">Check matches</button>
             </form>
             <div class="teacher-card" data-room="vocab"></div>
@@ -123,7 +149,8 @@
               <span>Your corrected sentence</span>
               <input type="text" id="grammar-input" placeholder="Write the corrected sentence" />
             </label>
-            <p class="inline-hints" id="grammar-example"></p>
+            <div class="inline-hints" id="grammar-example"></div>
+            <div class="inline-hints" id="grammar-checklist" aria-live="polite"></div>
             <div class="profile-actions">
               <button class="secondary" id="grammar-hint" type="button" aria-label="Get a grammar hint">Get one hint</button>
               <button class="primary" id="grammar-check">Submit correction</button>
@@ -141,6 +168,7 @@
             </div>
             <p class="lead" id="fig-objective">Pick whether each clue is a simile, metaphor, or personification.</p>
             <div id="figurative-list" class="stack"></div>
+            <div class="inline-hints" id="fig-microcopy"></div>
             <button class="primary" id="figurative-check">Lock in answers</button>
             <div class="teacher-card" data-room="fig"></div>
           </section>
@@ -157,6 +185,7 @@
             <form id="syn-ant-form" class="stack">
               <div class="dual-field" id="syn-rows"></div>
               <div class="inline-hints" id="syn-inline-hint"></div>
+              <div class="inline-hints" id="syn-microcopy"></div>
               <button class="primary" type="submit">Submit pairs</button>
             </form>
             <div class="teacher-card" data-room="synAnt"></div>
@@ -180,6 +209,8 @@
               <span>Your story</span>
               <textarea id="story-input" rows="6" placeholder="Spin your mini story here..."></textarea>
             </label>
+            <div class="inline-hints" id="story-checklist" aria-live="polite"></div>
+            <div class="inline-hints" id="story-microcopy"></div>
             <button class="primary" id="story-submit">Complete the journey</button>
             <div class="teacher-card" data-room="story"></div>
           </section>
@@ -225,11 +256,44 @@
             </div>
             <div class="controls">
               <button class="secondary" type="button" id="teacher-toggle">Teacher mode</button>
-              <button class="secondary" type="button" id="export-telemetry">Export telemetry</button>
-              <button class="secondary" type="button" id="export-telemetry-csv">Export CSV</button>
               <button class="secondary" type="button" id="contrast-toggle" aria-pressed="false">High contrast</button>
+              <button class="secondary" type="button" id="audio-toggle" aria-pressed="false">Ambient audio</button>
             </div>
             <div class="telemetry" id="telemetry-readout"></div>
+            <section class="admin-panel" aria-label="Admin and exports">
+              <div class="card-header">
+                <div>
+                  <p class="eyebrow">Admin panel</p>
+                  <h3>Exports & Filters</h3>
+                </div>
+                <span class="tag">Teacher</span>
+              </div>
+              <label class="field">
+                <span>Filter by squad</span>
+                <input id="filter-squad" type="text" placeholder="Team Griffin" />
+              </label>
+              <label class="field">
+                <span>Filter by room</span>
+                <select id="filter-room">
+                  <option value="all">All rooms</option>
+                  <option value="0">Room 1</option>
+                  <option value="1">Room 2</option>
+                  <option value="2">Room 3</option>
+                  <option value="3">Room 4</option>
+                  <option value="4">Room 5</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Date window</span>
+                <input type="date" id="filter-date" />
+              </label>
+              <div class="controls">
+                <button class="secondary" type="button" id="export-telemetry">Export telemetry</button>
+                <button class="secondary" type="button" id="export-telemetry-csv">Export CSV</button>
+                <button class="secondary" type="button" id="class-summary">Class summary</button>
+              </div>
+              <div id="summary-readout" class="telemetry"></div>
+            </section>
             <section class="teacher-dashboard" id="teacher-dashboard" aria-live="polite">
               <div class="card-header">
                 <div>
@@ -250,6 +314,7 @@
                   <option value="4">Room 5</option>
                 </select>
               </label>
+              <button class="secondary" type="button" id="reset-room">Reset active room</button>
             </section>
           </section>
         </aside>
@@ -258,5 +323,10 @@
   </div>
   <script src="gameData.js"></script>
   <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
 </body>
 </html>
