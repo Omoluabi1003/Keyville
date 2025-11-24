@@ -9,7 +9,8 @@ export const routes: RouteConfig[] = [
   { href: '/', label: 'Home' },
   { href: '/experience', label: 'Play a Quest' },
   { href: '/students', label: 'Study Tips' },
-  { href: '/storycraft', label: 'Storycraft' }
+  { href: '/storycraft', label: 'Storycraft' },
+  { href: '/platform', label: 'Platform' }
 ];
 
 export const siteMetadata = {
