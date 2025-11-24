@@ -28,7 +28,7 @@
       <div>
         <p class="eyebrow">Language Game</p>
         <h1>The Lexicon Detective Escape Room</h1>
-        <p class="subtitle">Crack every clue across five rooms to earn your Chief Language Officer badge! Content and rubrics are locked to the canonical spec below.</p>
+        <p class="subtitle">Crack every clue across endlessly looping rooms to earn your Chief Language Officer badge! Content and rubrics are locked to the canonical spec below.</p>
       </div>
     </header>
 
@@ -63,17 +63,18 @@
             <div class="orientation">
               <p class="eyebrow">Game map</p>
               <ul>
-                <li>5 rooms, each with instant feedback and auto-save.</li>
+                <li>5 rooms per stage with instant feedback and auto-save—stages keep rolling.</li>
                 <li>Use the Start / Resume button to jump back into the next task.</li>
                 <li>Need a fresh try? Reset progress without losing your badge.</li>
                 <li>Teacher mode reveals rubrics, answers, and rationales without touching the student flow.</li>
+                <li>Every 10 stages earns a special milestone badge to celebrate perseverance.</li>
               </ul>
             </div>
           </section>
 
           <section class="progress-card">
             <div class="progress-label">
-              <span id="progress-text">Room 1 of 5</span>
+              <span id="progress-text">Stage 1 · Room 1 of 5</span>
               <span id="progress-hint">Vocabulary Vault</span>
             </div>
             <div class="progress">
@@ -196,7 +197,8 @@
             <p class="lead">You escaped every room! Review your detective notes below and celebrate your word mastery.</p>
             <div id="summary"></div>
             <div class="actions">
-              <button class="secondary" id="restart">Play again</button>
+              <button class="secondary" id="restart">Replay this stage</button>
+              <button class="primary" id="next-stage" aria-label="Start the next stage">Next stage adventure</button>
               <button class="primary" id="print-badge" aria-label="Print or share CLO badge">Print / Share badge</button>
             </div>
           </section>
