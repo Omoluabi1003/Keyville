@@ -17,6 +17,14 @@ const vocabDefinitions = [
   },
 ];
 
+const roomMeta = [
+  { title: 'Vocabulary Vault', tag: 'Match & Unlock' },
+  { title: 'Grammar Detective Bureau', tag: 'Fix It' },
+  { title: 'Figurative Language Lab', tag: 'Identify' },
+  { title: 'Synonym–Antonym Arena', tag: 'Double Duty' },
+  { title: 'Executive Story Spin', tag: 'Create' },
+];
+
 const figurativePrompts = [
   {
     id: 'clue1',
@@ -47,6 +55,10 @@ const feedbackBox = document.getElementById('feedback');
 const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
 const progressHint = document.getElementById('progress-hint');
+const roomStatus = document.getElementById('room-status');
+const statusLine = document.getElementById('status-line');
+
+const answerKeys = ['vocab', 'grammar', 'fig', 'synAnt', 'story'];
 
 function loadState() {
   const stored = localStorage.getItem(stateKey);
@@ -77,26 +89,18 @@ function setFeedback(message, type = 'info') {
 }
 
 function showRoom(index) {
-  const rooms = document.querySelectorAll('.card');
-  rooms.forEach((room, idx) => {
+  const cards = document.querySelectorAll('.card');
+  cards.forEach((room, idx) => {
     if (idx === index) {
       room.classList.remove('hidden');
     } else {
       room.classList.add('hidden');
     }
   });
-  const hints = [
-    'Vocabulary Vault',
-    'Grammar Detective Bureau',
-    'Figurative Language Lab',
-    'Synonym–Antonym Arena',
-    'Executive Story Spin',
-  ];
-  if (index < hints.length) {
-    progressHint.textContent = hints[index];
-    progressText.textContent = `Room ${index + 1} of 5`;
-    progressFill.style.width = `${((index + 1) / 5) * 100}%`;
-  }
+  progressHint.textContent = roomMeta[index]?.title || 'CLO Achieved';
+  progressText.textContent = `Room ${index + 1} of 5`;
+  progressFill.style.width = `${((index + 1) / 5) * 100}%`;
+  refreshRoomStatus();
   saveState();
 }
 
@@ -286,6 +290,7 @@ function showWin() {
   progressText.textContent = 'Completed';
   progressFill.style.width = '100%';
   renderSummary();
+  refreshRoomStatus();
   saveState();
 }
 
@@ -333,6 +338,46 @@ function restartGame() {
   showRoom(0);
 }
 
+function roomStateForIndex(index) {
+  if (state.completed) return 'done';
+  if (state.answers?.[answerKeys[index]]) return 'done';
+  if (state.currentRoom === index) return 'active';
+  return state.currentRoom > index ? 'done' : 'locked';
+}
+
+function renderRoomStatus() {
+  roomStatus.innerHTML = roomMeta
+    .map((room, idx) => {
+      const roomState = roomStateForIndex(idx);
+      const label = roomState === 'done' ? 'Cleared' : roomState === 'active' ? 'In progress' : 'Locked';
+      return `
+        <div class="room-chip" data-state="${roomState}">
+          <div class="chip-label">
+            <span>${idx + 1}. ${room.title}</span>
+          </div>
+          <span class="chip-pill ${roomState}">${label}</span>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+function refreshStatusLine() {
+  if (state.completed) {
+    statusLine.textContent = 'All rooms cleared! Claim your CLO badge.';
+    statusLine.className = 'status-line';
+    return;
+  }
+  const currentRoom = roomMeta[state.currentRoom];
+  statusLine.textContent = `Now playing Room ${state.currentRoom + 1}: ${currentRoom.title} (${currentRoom.tag})`;
+  statusLine.className = 'status-line';
+}
+
+function refreshRoomStatus() {
+  renderRoomStatus();
+  refreshStatusLine();
+}
+
 function hydrateAnswers() {
   if (!state.answers) return;
   const { vocab, grammar, fig, synAnt, story } = state.answers;
@@ -366,6 +411,7 @@ function init() {
   populateFigurative();
   setupChoiceHandlers();
   hydrateAnswers();
+  refreshRoomStatus();
   if (state.completed) {
     showWin();
   } else {
