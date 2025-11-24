@@ -6,17 +6,10 @@ export type RouteConfig = {
 };
 
 export const routes: RouteConfig[] = [
-  { href: '/', label: 'Landing' },
-  { href: '/experience', label: 'Experience' },
-  { href: '/students', label: 'Students' },
-  { href: '/teacher', label: 'Teacher' },
-  { href: '/storycraft', label: 'Storycraft' },
-  { href: '/integrations', label: 'Integrations' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/docs', label: 'Docs' },
-  { href: '/about', label: 'About' },
-  { href: '/privacy', label: 'Privacy' },
-  { href: '/security', label: 'Security' }
+  { href: '/', label: 'Home' },
+  { href: '/experience', label: 'Play a Quest' },
+  { href: '/students', label: 'Study Tips' },
+  { href: '/storycraft', label: 'Storycraft' }
 ];
 
 export const siteMetadata = {
@@ -39,25 +32,25 @@ export const siteMetadata = {
 };
 
 export const heroStats = [
-  { label: 'Micro-challenges completed', value: '42k', detail: '+1.8x writing stamina' },
-  { label: 'District pilots', value: '12', detail: 'Spanning 4 states' },
-  { label: 'Teacher hours saved', value: '3.2h/wk', detail: 'Reduced manual scoring' }
+  { label: 'Quick quests finished', value: '42k', detail: 'Short rounds keep focus strong' },
+  { label: 'Average session', value: '10 minutes', detail: 'Fast to start, easy to pause' },
+  { label: 'Friendly feedback', value: 'Instant tips', detail: 'Hints, not grades' }
 ];
 
 export const caseStudies = [
   {
-    name: 'Hudson Valley Pilot',
-    dates: 'Fall 2023',
-    outcomes: ['+24% completion', '2x formative feedback coverage', 'Universal Design for Learning alignment'],
-    quote: 'Keyville made room rotations less chaotic and gave my students a voice in feedback.',
-    role: '6th grade ELA teacher'
+    name: 'Maya, 6th grader',
+    dates: '3 weeks of practice',
+    outcomes: ['Used “Story Sprint” to finish homework on time', 'Turned feedback into two quick edits', 'Stayed focused without feeling rushed'],
+    quote: 'The quests felt like levels in a game. I fixed my story faster because the hints were short.',
+    role: 'Student writer'
   },
   {
-    name: 'Great Lakes District',
-    dates: 'Spring 2024',
-    outcomes: ['Writing samples ready for state reporting', 'Roster sync in 48 hours', 'Students self-reflected weekly'],
-    quote: 'We saw writing volume jump without increasing screen fatigue.',
-    role: 'Director of Curriculum'
+    name: 'Mr. Carter’s ELA class',
+    dates: '2 class periods',
+    outcomes: ['Everyone finished a paragraph quest', 'Students swapped kind feedback cards', 'Less screen hopping and fewer tabs'],
+    quote: 'My students felt safe to try, edit, and try again because the steps were simple.',
+    role: '6th grade teacher'
   }
 ];
 
