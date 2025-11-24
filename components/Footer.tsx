@@ -6,9 +6,9 @@ export default function Footer() {
     <footer className="footer" aria-label="Site footer">
       <div className="footer-grid">
         <div>
-          <h3>Keyville</h3>
+          <h3>ETL GIS Consulting LLC</h3>
           <p className="small">
-            Writing growth through playful practice. Built for classrooms, trusted by districts, loved by students.
+            Writing growth through playful practice, delivered as a trusted education product by ETL GIS Consulting LLC.
           </p>
         </div>
         <div>
@@ -28,7 +28,7 @@ export default function Footer() {
           <p className="small">SIS-friendly exports, privacy-first analytics, SOC2-inspired controls, and clear SLAs.</p>
         </div>
       </div>
-      <p className="small" style={{ marginTop: '1rem' }}>© {new Date().getFullYear()} Keyville Labs</p>
+      <p className="small" style={{ marginTop: '1rem' }}>© {new Date().getFullYear()} ETL GIS Consulting LLC</p>
     </footer>
   );
 }

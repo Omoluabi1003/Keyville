@@ -3,7 +3,7 @@ import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville | Storycraft Studio',
+  title: 'Keyville by ETL GIS Consulting LLC | Storycraft Studio',
   description: 'Micro-story studio overview with templates, AI tone coaching, and accessible controls.'
 };
 

@@ -4,7 +4,7 @@ import { caseStudies, heroStats } from '../../lib/navigation';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville | Landing',
+  title: 'Keyville by ETL GIS Consulting LLC | Landing',
   description: 'Room-rotation writing practice that feels like a game, with simple steps for middle schoolers.'
 };
 
@@ -14,6 +14,9 @@ export default function LandingPage() {
       <section className="hero">
         <div>
           <div className="badge">Made for middle schoolers</div>
+          <p className="small" aria-label="Product owner">
+            A product of ETL GIS Consulting LLC
+          </p>
           <h1>Study with quick quests, not endless tabs</h1>
           <p>
             Keyville turns writing practice into bite-sized challenges. You pick a quest, write for a few minutes, and get

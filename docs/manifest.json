@@ -1,6 +1,6 @@
 {
-  "name": "Keyville: The Lexicon Detective Escape Room",
-  "short_name": "Keyville",
+  "name": "Keyville by ETL GIS Consulting LLC: The Lexicon Detective Escape Room",
+  "short_name": "ETL GIS",
   "description": "A grade-6 friendly escape-room language game with badges, music, and looping stages.",
   "start_url": "./index.html",
   "scope": "./",

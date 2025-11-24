@@ -12,7 +12,10 @@ export const metadata: Metadata = {
   description: siteMetadata.description,
   openGraph: siteMetadata.openGraph,
   twitter: siteMetadata.twitter,
-  metadataBase: new URL('https://keyville.app')
+  applicationName: 'Keyville by ETL GIS Consulting LLC',
+  manifest: '/manifest.webmanifest',
+  metadataBase: new URL('https://etl-gis.com'),
+  themeColor: '#111827'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
