@@ -84,6 +84,7 @@ let roomStartTime = null;
 let audioContext = null;
 let grammarHintSpent = false;
 let ambientOscillator = null;
+let transitionHideTimeout = null;
 
 function loadState() {
   const stored = localStorage.getItem(stateKey);
@@ -681,20 +682,32 @@ function goToNextRoom() {
   }
 }
 
+function hideTransition() {
+  if (transitionHideTimeout) {
+    clearTimeout(transitionHideTimeout);
+    transitionHideTimeout = null;
+  }
+  transitionOverlay.classList.add('hidden');
+  transitionOverlay.setAttribute('aria-hidden', 'true');
+}
+
 function showTransition(nextRoomIndex) {
   const nextRoom = currentCase[nextRoomIndex];
   transitionTitle.textContent = `${nextRoom.title} unlocked`;
   transitionBody.textContent = nextRoom.narrative;
   transitionLabel.textContent = `Moving to Room ${nextRoomIndex + 1}`;
   transitionProgress.style.width = '0%';
+  hideTransition();
   transitionOverlay.classList.remove('hidden');
+  transitionOverlay.setAttribute('aria-hidden', 'false');
   setTimeout(() => {
     transitionProgress.style.width = '100%';
   }, 80);
-  setTimeout(() => transitionOverlay.classList.add('hidden'), 1200);
+  transitionHideTimeout = setTimeout(hideTransition, 1200);
 }
 
 function showWin() {
+  hideTransition();
   document.querySelectorAll('.card').forEach((card) => card.classList.add('hidden'));
   document.getElementById('win-screen').classList.remove('hidden');
   progressHint.textContent = 'CLO Achieved';
@@ -1265,6 +1278,18 @@ function setupEvents() {
       setFeedback('Active room reset for retake.', 'info');
     });
   }
+
+  if (transitionOverlay) {
+    transitionOverlay.addEventListener('click', (event) => {
+      if (event.target === transitionOverlay) hideTransition();
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !transitionOverlay.classList.contains('hidden')) {
+      hideTransition();
+    }
+  });
 }
 
 function init() {
