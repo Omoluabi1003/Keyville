@@ -6,9 +6,11 @@ const defaultState = {
   version: stateVersion,
   currentRoom: 0,
   completed: false,
+  stage: 1,
   answers: {},
   player: { name: '', team: '' },
   badges: [],
+  stageAwards: [],
   caseSeed: null,
   caseData: null,
   telemetry: {
@@ -50,6 +52,7 @@ const transitionClose = document.getElementById('transition-close');
 const toastContainer = document.getElementById('toast-container');
 const progressPercent = document.getElementById('progress-percent');
 const roomMapList = document.getElementById('room-map');
+const nextStageButton = document.getElementById('next-stage');
 const highContrastToggle = document.getElementById('contrast-toggle');
 const audioToggle = document.getElementById('audio-toggle');
 const grammarExample = document.getElementById('grammar-example');
@@ -77,6 +80,7 @@ const storyMicrocopy = document.getElementById('story-microcopy');
 const grammarChecklist = document.getElementById('grammar-checklist');
 
 const answerKeys = ['vocab', 'grammar', 'fig', 'synAnt', 'story'];
+const roomsPerStage = answerKeys.length;
 let currentCase = null;
 let roomMeta = [];
 let roomMap = {};
@@ -101,6 +105,8 @@ function loadState() {
         answers: parsed.answers || {},
         player: { ...defaultState.player, ...(parsed.player || {}) },
         badges: parsed.badges || [],
+        stage: parsed.stage || defaultState.stage,
+        stageAwards: parsed.stageAwards || [],
         caseData: parsed.caseData || null,
         telemetry: { ...defaultState.telemetry, ...(parsed.telemetry || {}) },
         mastery: parsed.mastery || {},
@@ -173,8 +179,10 @@ function playerGreeting() {
 
 function updateStartButtonLabel() {
   if (!startButton) return;
-  const roomLabel = state.completed ? 'Replay from Room 1' : `Room ${state.currentRoom + 1}`;
-  startButton.textContent = state.completed ? 'Replay the escape' : `Start / Resume: ${roomLabel}`;
+  const roomLabel = state.completed
+    ? `Begin Stage ${state.stage + 1}`
+    : `Stage ${state.stage} · Room ${state.currentRoom + 1}`;
+  startButton.textContent = state.completed ? roomLabel : `Start / Resume: ${roomLabel}`;
   startButton.ariaLabel = `${startButton.textContent} as ${playerGreeting()}`;
 }
 
@@ -260,6 +268,19 @@ function showToast(message) {
   }, 2500);
 }
 
+function stageAwardLabel(stageNumber) {
+  if (stageNumber % 10 !== 0) return null;
+  const milestoneBadges = [
+    'Courage Collector',
+    'Word Wonder',
+    'Grammar Guardian',
+    'Figurative Flame',
+    'Story Superstar',
+  ];
+  const index = ((stageNumber / 10 - 1) % milestoneBadges.length + milestoneBadges.length) % milestoneBadges.length;
+  return `Stage ${stageNumber} ${milestoneBadges[index]}`;
+}
+
 function showRoom(index) {
   hideTransition();
   const allowedIndex = Math.min(index, state.currentRoom);
@@ -276,7 +297,7 @@ function showRoom(index) {
   });
   const progressRatio = computeProgress(allowedIndex);
   progressHint.textContent = roomMeta[allowedIndex]?.title || 'CLO Achieved';
-  progressText.textContent = `Room ${allowedIndex + 1} of 5`;
+  progressText.textContent = `Stage ${state.stage} · Room ${allowedIndex + 1} of ${roomsPerStage}`;
   progressFill.style.width = `${progressRatio * 100}%`;
   if (progressPercent) {
     progressPercent.textContent = `${Math.round(progressRatio * 100)}% complete`;
@@ -670,17 +691,33 @@ function validateStory(text) {
   return null;
 }
 
+function completeStage() {
+  const finishedStage = state.stage || 1;
+  const stageBadge = `Stage ${finishedStage} Champion`;
+  awardBadge(stageBadge);
+  state.stageAwards = state.stageAwards || [];
+  if (!state.stageAwards.includes(stageBadge)) state.stageAwards.push(stageBadge);
+  const milestone = stageAwardLabel(finishedStage);
+  if (milestone && !state.stageAwards.includes(milestone)) {
+    state.stageAwards.push(milestone);
+    awardBadge(milestone);
+    showToast(`${milestone} earned! Ten stages of grit completed.`);
+  }
+  state.completed = true;
+  saveState();
+  showToast(`Stage ${finishedStage} cleared! You're unstoppable.`);
+  showWin();
+}
+
 function goToNextRoom() {
-  if (state.currentRoom < 4) {
+  if (state.currentRoom < roomsPerStage - 1) {
     showTransition(state.currentRoom + 1);
     state.currentRoom += 1;
     saveState();
     showToast(`Next room unlocked: ${roomMeta[state.currentRoom].title}`);
     setTimeout(() => showRoom(state.currentRoom), 900);
   } else {
-    state.completed = true;
-    showToast('All rooms cleared! Badge unlocked.');
-    showWin();
+    completeStage();
   }
 }
 
@@ -712,8 +749,8 @@ function showWin() {
   hideTransition();
   document.querySelectorAll('.card').forEach((card) => card.classList.add('hidden'));
   document.getElementById('win-screen').classList.remove('hidden');
-  progressHint.textContent = 'CLO Achieved';
-  progressText.textContent = 'Completed';
+  progressHint.textContent = `Stage ${state.stage} complete`;
+  progressText.textContent = `Stage ${state.stage} victory`;
   progressFill.style.width = '100%';
   renderSummary();
   refreshRoomStatus();
@@ -734,6 +771,9 @@ function renderSummary() {
   badge.className = 'summary-item';
   const teamLabel = state.player?.team ? ` — Squad: ${state.player.team}` : '';
   badge.innerHTML = `<strong>Badge:</strong> ${state.player?.name || '—'}${teamLabel}`;
+  const stage = document.createElement('div');
+  stage.className = 'summary-item';
+  stage.innerHTML = `<strong>Stage:</strong> ${state.stage} (rooms refresh for the next adventure)`;
   const vocab = document.createElement('div');
   vocab.className = 'summary-item';
   vocab.innerHTML = `<strong>Vocabulary Vault:</strong> ${Object.entries(answers.vocab || {})
@@ -763,14 +803,18 @@ function renderSummary() {
   story.className = 'summary-item';
   story.innerHTML = `<strong>Story:</strong> ${answers.story || '—'}`;
 
-  [badge, vocab, grammar, figurative, pairs, story].forEach((item) => summary.appendChild(item));
+  [badge, stage, vocab, grammar, figurative, pairs, story].forEach((item) => summary.appendChild(item));
 }
 
-function restartGame({ keepPlayer = true, randomizeCase = true } = {}) {
+function restartGame({ keepPlayer = true, randomizeCase = true, keepStage = true } = {}) {
   const player = keepPlayer ? state.player : { ...defaultState.player };
+  const stage = keepStage ? state.stage : defaultState.stage;
   state = {
     ...defaultState,
     player,
+    badges: state.badges,
+    stageAwards: state.stageAwards,
+    stage,
     caseSeed: randomizeCase ? Date.now() : state.caseSeed,
     caseData: randomizeCase ? null : state.caseData,
   };
@@ -779,6 +823,19 @@ function restartGame({ keepPlayer = true, randomizeCase = true } = {}) {
   setFeedback('Progress cleared. You are back at Room 1.', 'info');
   showRoom(0);
   saveState();
+}
+
+function startNextStage() {
+  const nextStage = (state.stage || 1) + 1;
+  restartGame({ keepPlayer: true, randomizeCase: true, keepStage: false });
+  state.stage = nextStage;
+  state.completed = false;
+  saveState();
+  showRoom(0);
+  showToast(`Stage ${nextStage} loaded! Keep shining.`);
+  setFeedback(`Stage ${nextStage} is ready. You've got this!`, 'success');
+  updateStartButtonLabel();
+  refreshRoomStatus();
 }
 
 function roomStateForIndex(index) {
@@ -808,12 +865,12 @@ function renderRoomStatus() {
 
 function refreshStatusLine() {
   if (state.completed) {
-    statusLine.textContent = `${playerGreeting()}, all rooms are cleared! Claim your CLO badge.`;
+    statusLine.textContent = `${playerGreeting()}, Stage ${state.stage} is cleared! Claim your badge or launch Stage ${state.stage + 1}.`;
     statusLine.className = 'status-line';
     return;
   }
   const currentRoom = roomMeta[state.currentRoom];
-  statusLine.textContent = `${playerGreeting()}, now playing Room ${state.currentRoom + 1}: ${currentRoom.title} (${currentRoom.tag}).`;
+  statusLine.textContent = `${playerGreeting()}, now playing Stage ${state.stage}, Room ${state.currentRoom + 1}: ${currentRoom.title} (${currentRoom.tag}).`;
   statusLine.className = 'status-line';
 }
 
@@ -862,7 +919,9 @@ function renderRoomMap() {
 function renderMapSummary() {
   if (!roomMapSummary) return;
   const cleared = answerKeys.filter((key) => state.answers?.[key]).length;
-  const label = state.completed ? 'All rooms cleared!' : `${cleared}/5 rooms cleared. Locked rooms stay hidden until you finish the current one.`;
+  const label = state.completed
+    ? `Stage ${state.stage} cleared!`
+    : `${cleared}/${roomsPerStage} rooms cleared in Stage ${state.stage}. Locked rooms stay hidden until you finish the current one.`;
   roomMapSummary.textContent = label;
 }
 
@@ -1081,7 +1140,7 @@ function renderTeacherDashboard() {
 }
 
 function unlockRoomAt(index) {
-  if (index < 0 || index > 4) return;
+  if (index < 0 || index > roomsPerStage - 1) return;
   state.unlockedRooms = Array.from(new Set([...state.unlockedRooms, index]));
   state.currentRoom = index;
   saveState();
@@ -1140,12 +1199,12 @@ function setupEvents() {
 
   startButton.addEventListener('click', () => {
     if (state.completed) {
-      showWin();
+      startNextStage();
     } else {
       showRoom(state.currentRoom);
+      const targetId = `room-${state.currentRoom}`;
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    const targetId = state.completed ? 'win-screen' : `room-${state.currentRoom}`;
-    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   resetButton.addEventListener('click', () => {
@@ -1234,6 +1293,10 @@ function setupEvents() {
       goToNextRoom();
     }
   });
+
+  if (nextStageButton) {
+    nextStageButton.addEventListener('click', startNextStage);
+  }
 
   document.getElementById('restart').addEventListener('click', restartGame);
   document.getElementById('print-badge').addEventListener('click', printBadge);
