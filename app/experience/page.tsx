@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import ExperienceSandbox from './ExperienceSandbox';
 
 export const metadata: Metadata = {
-  title: 'Keyville | Experience Sandbox',
+  title: 'Keyville by ETL GIS Consulting LLC | Experience Sandbox',
   description: 'Play a room-rotation micro-challenge, view AI feedback, and see telemetry without creating an account.',
   openGraph: {
     title: 'Experience the Keyville sandbox',

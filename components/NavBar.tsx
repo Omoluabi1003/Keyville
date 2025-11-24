@@ -14,8 +14,12 @@ export default function NavBar() {
       </a>
       <nav aria-label="Primary navigation" style={{ padding: '0.75rem 1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <Link href="/" aria-label="Go to Keyville home" style={{ fontWeight: 800, letterSpacing: '0.02em' }}>
-            Keyville
+          <Link
+            href="/"
+            aria-label="Go to ETL GIS Consulting LLC home"
+            style={{ fontWeight: 800, letterSpacing: '0.02em' }}
+          >
+            ETL GIS Consulting LLC
           </Link>
           <ul role="list">
             {routes.map((route) => {

@@ -3,7 +3,7 @@ import CTAButton from '../../components/CTAButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Keyville | Docs',
+  title: 'Keyville by ETL GIS Consulting LLC | Docs',
   description: 'Product documentation hub with setup, classroom tips, and observability instrumentation.'
 };
 
