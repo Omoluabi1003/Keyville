@@ -167,6 +167,9 @@ export default function ExperienceSandbox() {
   const [hasHydrated, setHasHydrated] = useState(false);
   const [selectedClass, setSelectedClass] = useState(classSections[1]);
   const [teacherPlans, setTeacherPlans] = useState<Record<string, TeacherClassSetting>>({});
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const [activeVoice, setActiveVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
 
   const activeTeacherPlan = useMemo(
     () => teacherPlans[selectedClass] ?? defaultTeacherClassSetting(),
@@ -197,6 +200,28 @@ export default function ExperienceSandbox() {
     () => kidThemes.find((theme) => theme.id === activeTeacherPlan.selectedThemeId),
     [activeTeacherPlan.selectedThemeId]
   );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    const synth = window.speechSynthesis;
+
+    const chooseVoice = () => {
+      const voices = synth.getVoices();
+      const englishVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith('en'));
+      setActiveVoice(englishVoice ?? voices[0] ?? null);
+      setSpeechSupported(true);
+    };
+
+    chooseVoice();
+    synth.addEventListener('voiceschanged', chooseVoice);
+    synth.onvoiceschanged = chooseVoice;
+
+    return () => {
+      synth.removeEventListener('voiceschanged', chooseVoice);
+      synth.onvoiceschanged = null;
+    };
+  }, []);
 
   const themePromptCount = selectedTheme?.starterPrompts.length ?? 0;
 
@@ -350,6 +375,24 @@ export default function ExperienceSandbox() {
       label: 'Reflective Thinker',
       detail: 'You noticed what changed and why it mattered.'
     });
+  };
+
+  const speakStep = (stepId: string, text: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    const synth = window.speechSynthesis;
+    synth.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = activeVoice?.lang ?? 'en-US';
+    utterance.voice = activeVoice ?? null;
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.onend = () => setSpeakingId((current) => (current === stepId ? null : current));
+    utterance.onerror = () => setSpeakingId((current) => (current === stepId ? null : current));
+
+    setSpeakingId(stepId);
+    synth.speak(utterance);
   };
 
   const correctVocabulary = vocabulary.filter((item) => vocabAnswers[item.word] === item.correct).length;
@@ -538,6 +581,24 @@ export default function ExperienceSandbox() {
                           </div>
                         </div>
                         <p className="small">Sample: {step.sample}</p>
+                        <div className="micro-step-actions">
+                          <button
+                            className="read-button"
+                            type="button"
+                            onClick={() =>
+                              speakStep(
+                                step.id,
+                                `${step.title}. ${step.prompt} Tip: ${step.tooltip}. Sample: ${step.sample}`
+                              )
+                            }
+                            disabled={!speechSupported}
+                            aria-label={`Read ${step.title} instructions aloud`}
+                          >
+                            <span aria-hidden>{speakingId === step.id ? '🔊' : '🗣️'}</span>
+                            Read to me
+                          </button>
+                          {!speechSupported && <span className="small">Audio not available in this browser.</span>}
+                        </div>
                       </li>
                     ))}
                   </ol>
