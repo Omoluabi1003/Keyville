@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import CTAButton from '../../components/CTAButton';
 import Section from '../../components/Section';
 import { sandboxChallenge } from '../../lib/navigation';
-import { kidThemes } from '../../lib/kidThemes';
+import { kidThemes, type KidTheme } from '../../lib/kidThemes';
 import {
   classSections,
   defaultTeacherClassSetting,
@@ -18,7 +18,7 @@ import {
 
 const identityBadges = ['Rookie Detective', 'Clue Collector', 'Signal Scout', 'Puzzle Pilot'];
 
-const rooms = [
+export const rooms = [
   {
     id: 'files',
     title: 'Class files',
@@ -80,7 +80,7 @@ const vocabulary = [
   }
 ];
 
-const scaffoldSteps = [
+export const scaffoldSteps = [
   {
     id: 'brainstorm',
     title: 'Brainstorm',
@@ -130,6 +130,13 @@ const writerLevels = [
 
 type EarnedBadge = { id: string; label: string; detail: string };
 
+export type RoomProgressState = {
+  progressLevel: number;
+  currentRoomIndex: number;
+  earnedBadges: EarnedBadge[];
+  completedRooms: string[];
+};
+
 type StoredProgress = {
   progressLevel: number;
   currentRoomIndex: number;
@@ -150,6 +157,73 @@ const defaultProgressState: StoredProgress = {
 
 const getStorageKey = (codename: string) =>
   `keyville-storycraft-${codename.trim().toLowerCase().replace(/\s+/g, '-') || 'student'}`;
+
+export const ensureBadge = (earnedBadges: EarnedBadge[], badgeToAdd: EarnedBadge) => {
+  if (earnedBadges.some((item) => item.id === badgeToAdd.id)) return earnedBadges;
+  return [...earnedBadges, badgeToAdd];
+};
+
+export const calculateScaffoldDepth = (plan: TeacherClassSetting) => {
+  let depth = scaffoldSteps.length;
+
+  if (plan.difficultyTier === 'standard') {
+    depth = Math.max(scaffoldSteps.length - 1, 4);
+  } else if (plan.difficultyTier === 'challenge') {
+    depth = Math.max(scaffoldSteps.length - 2, 3);
+  }
+
+  if (plan.schedulePreset === 'free-write-day') {
+    depth = Math.max(depth - 1, 2);
+  }
+
+  return depth;
+};
+
+export const buildLessonPlan = (plan: TeacherClassSetting, selectedTheme?: KidTheme) => {
+  const themePromptCount = selectedTheme?.starterPrompts.length ?? 0;
+
+  const basePrompt =
+    plan.kidModeEnabled && selectedTheme && themePromptCount
+      ? selectedTheme.starterPrompts[plan.promptIndex % themePromptCount]
+      : sandboxChallenge.prompt;
+
+  const prompt = `${basePrompt} ${tierPromptAdds[plan.difficultyTier]} ${schedulePromptAdds[plan.schedulePreset]}`;
+
+  const depth = calculateScaffoldDepth(plan);
+  const scaffolds = scaffoldSteps.slice(0, depth);
+
+  return {
+    prompt,
+    guardrail:
+      plan.kidModeEnabled && selectedTheme
+        ? `${selectedTheme.guardrail} · Scaffold depth: ${scaffolds.length} steps`
+        : 'Uses rubric-aligned language for older students.',
+    scaffolds
+  };
+};
+
+export const completeRoomProgress = (state: RoomProgressState, roomsList = rooms): RoomProgressState => {
+  const room = roomsList[state.currentRoomIndex];
+  const isNewCompletion = !state.completedRooms.includes(room.id);
+  const nextProgress = Math.max(state.progressLevel, state.currentRoomIndex + 1);
+
+  const updatedBadges = isNewCompletion
+    ? ensureBadge(state.earnedBadges, {
+        id: `room-${room.id}`,
+        label: `${room.title} Badge`,
+        detail: 'You cleared the room and kept the mission moving.'
+      })
+    : state.earnedBadges;
+
+  const completedRooms = isNewCompletion ? [...state.completedRooms, room.id] : state.completedRooms;
+
+  return {
+    earnedBadges: updatedBadges,
+    completedRooms,
+    progressLevel: Math.min(nextProgress, roomsList.length),
+    currentRoomIndex: Math.min(state.currentRoomIndex + 1, roomsList.length - 1)
+  };
+};
 
 export default function ExperienceSandbox() {
   const [codename, setCodename] = useState('Skyline Fox');
@@ -223,38 +297,10 @@ export default function ExperienceSandbox() {
     };
   }, []);
 
-  const themePromptCount = selectedTheme?.starterPrompts.length ?? 0;
-
-  const lessonPlan = useMemo(() => {
-    const basePrompt =
-      activeTeacherPlan.kidModeEnabled && selectedTheme && themePromptCount
-        ? selectedTheme.starterPrompts[activeTeacherPlan.promptIndex % themePromptCount]
-        : sandboxChallenge.prompt;
-
-    const prompt = `${basePrompt} ${tierPromptAdds[activeTeacherPlan.difficultyTier]} ${schedulePromptAdds[activeTeacherPlan.schedulePreset]}`;
-
-    let depth = scaffoldSteps.length;
-    if (activeTeacherPlan.difficultyTier === 'standard') {
-      depth = Math.max(scaffoldSteps.length - 1, 4);
-    } else if (activeTeacherPlan.difficultyTier === 'challenge') {
-      depth = Math.max(scaffoldSteps.length - 2, 3);
-    }
-
-    if (activeTeacherPlan.schedulePreset === 'free-write-day') {
-      depth = Math.max(depth - 1, 2);
-    }
-
-    const effectiveScaffolds = scaffoldSteps.slice(0, depth);
-
-    return {
-      prompt,
-      guardrail:
-        activeTeacherPlan.kidModeEnabled && selectedTheme
-          ? `${selectedTheme.guardrail} · Scaffold depth: ${effectiveScaffolds.length} steps`
-          : 'Uses rubric-aligned language for older students.',
-      scaffolds: effectiveScaffolds
-    };
-  }, [activeTeacherPlan, selectedTheme, themePromptCount]);
+  const lessonPlan = useMemo(
+    () => buildLessonPlan(activeTeacherPlan, selectedTheme),
+    [activeTeacherPlan, selectedTheme]
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -314,28 +360,21 @@ export default function ExperienceSandbox() {
   }, [activeTeacherPlan.schedulePreset, activeTeacherPlan.difficultyTier]);
 
   const addBadge = (badgeToAdd: EarnedBadge) => {
-    setEarnedBadges((prev) => {
-      if (prev.some((item) => item.id === badgeToAdd.id)) return prev;
-      return [...prev, badgeToAdd];
-    });
+    setEarnedBadges((prev) => ensureBadge(prev, badgeToAdd));
   };
 
   const completeCurrentRoom = () => {
-    const room = rooms[currentRoomIndex];
-    const isNewCompletion = !completedRooms.includes(room.id);
-    const nextProgress = Math.max(progressLevel, currentRoomIndex + 1);
+    const nextState = completeRoomProgress({
+      currentRoomIndex,
+      progressLevel,
+      completedRooms,
+      earnedBadges
+    });
 
-    if (isNewCompletion) {
-      addBadge({
-        id: `room-${room.id}`,
-        label: `${room.title} Badge`,
-        detail: 'You cleared the room and kept the mission moving.'
-      });
-      setCompletedRooms((prev) => [...prev, room.id]);
-    }
-
-    setProgressLevel(Math.min(nextProgress, rooms.length));
-    setCurrentRoomIndex((prev) => Math.min(prev + 1, rooms.length - 1));
+    setEarnedBadges(nextState.earnedBadges);
+    setCompletedRooms(nextState.completedRooms);
+    setProgressLevel(nextState.progressLevel);
+    setCurrentRoomIndex(nextState.currentRoomIndex);
   };
 
   const goToRoom = (roomIndex: number) => {
