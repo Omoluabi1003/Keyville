@@ -25,7 +25,7 @@ const defaultState = {
   unlockedRooms: [],
   mastery: {},
   practiceMode: false,
-  audioEnabled: false,
+  audioEnabled: true,
 };
 
 const feedbackBox = document.getElementById('feedback');
@@ -88,7 +88,8 @@ let state = loadState();
 let roomStartTime = null;
 let audioContext = null;
 let grammarHintSpent = false;
-let ambientOscillator = null;
+let soundtrackInterval = null;
+let soundtrackStep = 0;
 let transitionHideTimeout = null;
 
 function loadState() {
@@ -202,6 +203,7 @@ function setFeedback(message, type = 'info') {
 }
 
 function playTone(freq = 440) {
+  if (!state.audioEnabled) return;
   try {
     if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const duration = 0.15;
@@ -222,29 +224,55 @@ function startAmbient() {
   try {
     if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
     stopAmbient();
-    ambientOscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    ambientOscillator.type = 'sine';
-    ambientOscillator.frequency.value = 220;
-    gain.gain.value = 0.01;
-    ambientOscillator.connect(gain).connect(audioContext.destination);
-    ambientOscillator.start();
+    soundtrackStep = 0;
+    audioContext.resume().catch(() => {});
+    const tempo = 108;
+    const motif = [0, 4, 7, 9, 12, 7];
+    soundtrackInterval = setInterval(() => {
+      const now = audioContext.currentTime;
+      const note = motif[soundtrackStep % motif.length];
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.type = soundtrackStep % 4 === 0 ? 'triangle' : 'square';
+      osc.frequency.value = 196 * 2 ** (note / 12);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+      osc.connect(gain).connect(audioContext.destination);
+      osc.start(now);
+      osc.stop(now + 0.68);
+
+      if (soundtrackStep % 3 === 0) {
+        const sparkle = audioContext.createOscillator();
+        const sparkleGain = audioContext.createGain();
+        sparkle.type = 'sawtooth';
+        sparkle.frequency.value = 392 * 2 ** (((soundtrackStep % motif.length) - 2) / 12);
+        sparkleGain.gain.setValueAtTime(0.02, now + 0.12);
+        sparkleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        sparkle.connect(sparkleGain).connect(audioContext.destination);
+        sparkle.start(now + 0.12);
+        sparkle.stop(now + 0.42);
+      }
+
+      soundtrackStep += 1;
+    }, Math.round((60 / tempo) * 1000));
   } catch (err) {
-    console.warn('Ambient tone skipped', err);
+    console.warn('Ambient soundtrack skipped', err);
   }
 }
 
 function stopAmbient() {
   try {
-    ambientOscillator?.stop();
-    ambientOscillator = null;
+    if (soundtrackInterval) {
+      clearInterval(soundtrackInterval);
+      soundtrackInterval = null;
+    }
   } catch (err) {
     console.warn('Ambient stop error', err);
   }
 }
 
 function confetti() {
-  const colors = ['#7c3aed', '#22c55e', '#facc15', '#38bdf8'];
+  const colors = ['#ff7ac2', '#22c55e', '#facc15', '#38bdf8'];
   for (let i = 0; i < 18; i += 1) {
     const piece = document.createElement('div');
     piece.className = 'confetti-piece';
@@ -253,6 +281,36 @@ function confetti() {
     document.body.appendChild(piece);
     setTimeout(() => piece.remove(), 1900);
   }
+}
+
+function playCelebrationJingle() {
+  if (!state.audioEnabled) return;
+  try {
+    if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioContext.currentTime;
+    const pattern = [0, 7, 12, 19];
+    pattern.forEach((offset, idx) => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = 340 * 2 ** (offset / 12);
+      const startTime = now + idx * 0.06;
+      gain.gain.setValueAtTime(0.08, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+      osc.connect(gain).connect(audioContext.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.42);
+    });
+  } catch (err) {
+    console.warn('Celebration jingle skipped', err);
+  }
+}
+
+function celebrateRoom(roomId) {
+  confetti();
+  playCelebrationJingle();
+  const label = roomMap[roomId]?.title || 'Room cleared';
+  showToast(`${label} cleared! Confetti keys collected.`);
 }
 
 function showToast(message) {
@@ -1019,6 +1077,7 @@ function recordClear(roomId) {
     state.telemetry.clearTimes[roomId].push(duration);
   }
   state.mastery[roomId] = 1;
+  celebrateRoom(roomId);
   saveState();
   updateTelemetryReadout();
 }
@@ -1198,6 +1257,9 @@ function setupEvents() {
   }
 
   startButton.addEventListener('click', () => {
+    if (state.audioEnabled) {
+      startAmbient();
+    }
     if (state.completed) {
       startNextStage();
     } else {
@@ -1327,6 +1389,8 @@ function setupEvents() {
       } else {
         stopAmbient();
       }
+      saveState();
+      audioToggle.textContent = state.audioEnabled ? 'Ambient audio: On' : 'Ambient audio';
     });
   }
 
@@ -1370,6 +1434,11 @@ function init() {
   hydrateContent();
   hydratePlayerForm();
   refreshRoomStatus();
+  if (state.audioEnabled) {
+    audioToggle?.setAttribute('aria-pressed', 'true');
+    audioToggle.textContent = 'Ambient audio: On';
+    startAmbient();
+  }
   if (state.completed) {
     showWin();
   } else {
