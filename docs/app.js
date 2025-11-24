@@ -272,14 +272,15 @@ function stopAmbient() {
 }
 
 function confetti() {
-  const colors = ['#ff7ac2', '#22c55e', '#facc15', '#38bdf8'];
-  for (let i = 0; i < 18; i += 1) {
+  const colors = ['#ffe6f4', '#a5b4fc', '#7ce3ff', '#7efccf', '#ffd6a5'];
+  for (let i = 0; i < 24; i += 1) {
     const piece = document.createElement('div');
     piece.className = 'confetti-piece';
     piece.style.left = `${Math.random() * 100}%`;
     piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = `${Math.random() * 0.25}s`;
     document.body.appendChild(piece);
-    setTimeout(() => piece.remove(), 1900);
+    setTimeout(() => piece.remove(), 2100);
   }
 }
 
@@ -287,26 +288,40 @@ function playCelebrationJingle() {
   if (!state.audioEnabled) return;
   try {
     if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    audioContext.resume().catch(() => {});
     const now = audioContext.currentTime;
-    const pattern = [0, 7, 12, 19];
+    const pattern = [0, 7, 12, 19, 24, 19];
     pattern.forEach((offset, idx) => {
       const osc = audioContext.createOscillator();
       const gain = audioContext.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = 340 * 2 ** (offset / 12);
-      const startTime = now + idx * 0.06;
+      osc.type = idx % 2 === 0 ? 'triangle' : 'square';
+      osc.frequency.value = 360 * 2 ** (offset / 12);
+      const startTime = now + idx * 0.05;
       gain.gain.setValueAtTime(0.08, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.42);
       osc.connect(gain).connect(audioContext.destination);
       osc.start(startTime);
-      osc.stop(startTime + 0.42);
+      osc.stop(startTime + 0.46);
     });
+
+    const bass = audioContext.createOscillator();
+    const bassGain = audioContext.createGain();
+    bass.type = 'sawtooth';
+    bass.frequency.value = 110;
+    bassGain.gain.setValueAtTime(0.04, now);
+    bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    bass.connect(bassGain).connect(audioContext.destination);
+    bass.start(now);
+    bass.stop(now + 0.5);
   } catch (err) {
     console.warn('Celebration jingle skipped', err);
   }
 }
 
 function celebrateRoom(roomId) {
+  if (state.audioEnabled) {
+    startAmbient();
+  }
   confetti();
   playCelebrationJingle();
   const label = roomMap[roomId]?.title || 'Room cleared';

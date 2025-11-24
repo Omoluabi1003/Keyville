@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keyville-cache-v2';
+const CACHE_NAME = 'keyville-cache-v3';
 const OFFLINE_FALLBACK = '/docs/index.html';
 const STATIC_ASSETS = [
   '/docs/',
@@ -43,25 +43,35 @@ self.addEventListener('fetch', (event) => {
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       const cached = await cache.match(request);
-      try {
-        const preload = await event.preloadResponse;
-        if (preload) {
-          cache.put(request, preload.clone());
-          return preload;
+
+      const fetchAndUpdate = async () => {
+        try {
+          const preload = await event.preloadResponse;
+          if (preload) {
+            cache.put(request, preload.clone());
+            return preload;
+          }
+          const response = await fetch(request);
+          if (response && response.status === 200 && response.type === 'basic') {
+            cache.put(request, response.clone());
+          }
+          return response;
+        } catch (err) {
+          if (cached) return cached;
+          if (request.mode === 'navigate') {
+            const fallback = await cache.match(OFFLINE_FALLBACK);
+            if (fallback) return fallback;
+          }
+          throw err;
         }
-        const response = await fetch(request);
-        if (response && response.status === 200 && response.type === 'basic') {
-          cache.put(request, response.clone());
-        }
-        return response;
-      } catch (err) {
-        if (cached) return cached;
-        if (request.mode === 'navigate') {
-          const fallback = await cache.match(OFFLINE_FALLBACK);
-          if (fallback) return fallback;
-        }
-        throw err;
+      };
+
+      if (cached) {
+        fetchAndUpdate();
+        return cached;
       }
+
+      return fetchAndUpdate();
     })(),
   );
 });
