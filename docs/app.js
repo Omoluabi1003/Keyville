@@ -1,59 +1,20 @@
-const vocabDefinitions = [
-  {
-    id: 'elated',
-    text: 'Feeling extremely happy and excited',
-  },
-  {
-    id: 'cautious',
-    text: 'Acting with care to avoid danger or mistakes',
-  },
-  {
-    id: 'resourceful',
-    text: 'Able to solve problems with creative ideas and tools',
-  },
-  {
-    id: 'obstacle',
-    text: 'Something that blocks your path or progress',
-  },
-];
-
-const roomMeta = [
-  { title: 'Vocabulary Vault', tag: 'Match & Unlock' },
-  { title: 'Grammar Detective Bureau', tag: 'Fix It' },
-  { title: 'Figurative Language Lab', tag: 'Identify' },
-  { title: 'Synonym–Antonym Arena', tag: 'Double Duty' },
-  { title: 'Executive Story Spin', tag: 'Create' },
-];
-
-const figurativePrompts = [
-  {
-    id: 'clue1',
-    clue: 'The classroom was a buzzing beehive as projects began.',
-    answer: 'metaphor',
-  },
-  {
-    id: 'clue2',
-    clue: 'The wind whispered secrets through the tall grass.',
-    answer: 'personification',
-  },
-  {
-    id: 'clue3',
-    clue: 'Her backpack felt as heavy as a mountain of books.',
-    answer: 'simile',
-  },
-];
+const telemetryKey = 'lexicon-detective-telemetry';
+const stateKey = 'lexicon-detective-state';
 
 const defaultState = {
   currentRoom: 0,
   completed: false,
   answers: {},
-  player: {
-    name: '',
-    team: '',
+  player: { name: '', team: '' },
+  badges: [],
+  caseSeed: null,
+  caseData: null,
+  telemetry: {
+    attempts: {},
+    durations: {},
+    misses: {},
   },
 };
-
-const stateKey = 'lexicon-detective-state';
 
 const feedbackBox = document.getElementById('feedback');
 const progressFill = document.getElementById('progress-fill');
@@ -65,8 +26,24 @@ const startButton = document.getElementById('start-button');
 const resetButton = document.getElementById('reset-progress');
 const playerNameField = document.getElementById('player-name');
 const playerTeamField = document.getElementById('player-team');
+const badgeShelf = document.getElementById('badge-shelf');
+const teacherToggle = document.getElementById('teacher-toggle');
+const telemetryReadout = document.getElementById('telemetry-readout');
+const exportTelemetryButton = document.getElementById('export-telemetry');
+const newCaseButton = document.getElementById('new-case');
+const transitionOverlay = document.getElementById('transition-overlay');
+const transitionTitle = document.getElementById('transition-title');
+const transitionBody = document.getElementById('transition-body');
+const transitionProgress = document.getElementById('transition-progress');
+const transitionLabel = document.getElementById('transition-label');
 
 const answerKeys = ['vocab', 'grammar', 'fig', 'synAnt', 'story'];
+let currentCase = null;
+let roomMeta = [];
+let roomMap = {};
+let state = loadState();
+let roomStartTime = null;
+let audioContext = null;
 
 function loadState() {
   const stored = localStorage.getItem(stateKey);
@@ -78,6 +55,9 @@ function loadState() {
         ...parsed,
         answers: parsed.answers || {},
         player: { ...defaultState.player, ...(parsed.player || {}) },
+        badges: parsed.badges || [],
+        caseData: parsed.caseData || null,
+        telemetry: { ...defaultState.telemetry, ...(parsed.telemetry || {}) },
       };
     } catch (e) {
       console.warn('Resetting state due to parse error');
@@ -86,20 +66,51 @@ function loadState() {
   return { ...defaultState };
 }
 
-let state = loadState();
-
 function saveState() {
   localStorage.setItem(stateKey, JSON.stringify(state));
+  localStorage.setItem(telemetryKey, JSON.stringify(state.telemetry));
 }
 
-function setFeedback(message, type = 'info') {
-  feedbackBox.textContent = message;
-  feedbackBox.classList.remove('feedback-error', 'feedback-success');
-  if (type === 'error') {
-    feedbackBox.classList.add('feedback-error');
-  } else if (type === 'success') {
-    feedbackBox.classList.add('feedback-success');
+function randomChoice(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function deepCopy(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
+function composeRooms(randomize = false) {
+  const rooms = deepCopy(gameData.rooms);
+  if (!randomize) return rooms;
+
+  const vocabSet = randomChoice(gameData.pools.vocabularySets);
+  const grammarSet = randomChoice(gameData.pools.grammarPrompts);
+  const figSet = randomChoice(gameData.pools.figurativeSets);
+  const synSet = randomChoice(gameData.pools.synonymTargets);
+  rooms.find((r) => r.id === 'vocab').dataset.words = vocabSet;
+  rooms.find((r) => r.id === 'grammar').dataset = grammarSet;
+  rooms.find((r) => r.id === 'fig').dataset.prompts = figSet;
+  rooms.find((r) => r.id === 'synAnt').dataset.targets = synSet;
+  const storyRoom = rooms.find((r) => r.id === 'story');
+  storyRoom.dataset.simileBank = [
+    ...new Set([...storyRoom.dataset.simileBank, ...gameData.pools.simileBank]),
+  ];
+  return rooms;
+}
+
+function buildCase({ randomize = false } = {}) {
+  if (!state.caseData) {
+    state.caseData = composeRooms(randomize);
+    state.caseSeed = Date.now();
+  } else if (randomize) {
+    state.caseData = composeRooms(true);
+    state.caseSeed = Date.now();
   }
+
+  const rooms = deepCopy(state.caseData);
+  roomMeta = rooms.map((room) => ({ title: room.title, tag: room.tag }));
+  roomMap = rooms.reduce((acc, room) => ({ ...acc, [room.id]: room }), {});
+  currentCase = rooms;
 }
 
 function playerGreeting() {
@@ -116,12 +127,59 @@ function updateStartButtonLabel() {
   startButton.ariaLabel = `${startButton.textContent} as ${playerGreeting()}`;
 }
 
+function setFeedback(message, type = 'info') {
+  feedbackBox.textContent = message;
+  feedbackBox.classList.remove('feedback-error', 'feedback-success');
+  if (type === 'error') {
+    feedbackBox.classList.add('feedback-error');
+  } else if (type === 'success') {
+    feedbackBox.classList.add('feedback-success');
+  }
+  if (type === 'success') {
+    playTone(640);
+  } else if (type === 'error') {
+    playTone(260);
+  }
+}
+
+function playTone(freq = 440) {
+  try {
+    if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const duration = 0.15;
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.frequency.value = freq;
+    oscillator.type = 'sine';
+    gain.gain.setValueAtTime(0.02, audioContext.currentTime);
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + duration);
+  } catch (err) {
+    console.warn('Tone skipped', err);
+  }
+}
+
+function confetti() {
+  const colors = ['#7c3aed', '#22c55e', '#facc15', '#38bdf8'];
+  for (let i = 0; i < 18; i += 1) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 1900);
+  }
+}
+
 function showRoom(index) {
-  const cards = document.querySelectorAll('.card');
-  cards.forEach((room, idx) => {
-    if (idx === index) {
-      room.classList.remove('hidden');
-    } else {
+  document.querySelectorAll('.card').forEach((room) => {
+    if (room.id.startsWith('room-')) {
+      if (room.id === `room-${index}`) {
+        room.classList.remove('hidden');
+      } else {
+        room.classList.add('hidden');
+      }
+    } else if (room.id === 'win-screen') {
       room.classList.add('hidden');
     }
   });
@@ -130,31 +188,48 @@ function showRoom(index) {
   progressFill.style.width = `${((index + 1) / 5) * 100}%`;
   refreshRoomStatus();
   updateStartButtonLabel();
+  roomStartTime = Date.now();
   saveState();
 }
 
 function populateVocabulary() {
   const optionContainer = document.getElementById('definition-options');
+  const rows = document.getElementById('vocab-rows');
+  rows.innerHTML = '';
   optionContainer.innerHTML = '<strong>Word Bank</strong>: ' +
-    vocabDefinitions.map((def) => def.text).join(' • ');
+    roomMap.vocab.dataset.words.map((def) => def.definition).join(' • ');
+
+  roomMap.vocab.dataset.words.forEach((def, idx) => {
+    const row = document.createElement('div');
+    row.className = 'match-row';
+    row.innerHTML = `
+      <div class="definition">${idx + 1}. ${def.label}</div>
+      <select name="${def.id}" aria-label="Definition for ${def.label}">
+        <option value="">Choose the match</option>
+      </select>
+    `;
+    rows.appendChild(row);
+  });
 
   const selects = document.querySelectorAll('#vocab-form select');
   selects.forEach((select) => {
-    vocabDefinitions
+    roomMap.vocab.dataset.words
+      .slice()
       .sort(() => Math.random() - 0.5)
       .forEach((def) => {
         const opt = document.createElement('option');
         opt.value = def.id;
-        opt.textContent = def.text;
+        opt.textContent = def.definition;
         select.appendChild(opt);
       });
   });
+  document.getElementById('vocab-inline-hint').textContent = roomMap.vocab.objective;
 }
 
 function populateFigurative() {
   const list = document.getElementById('figurative-list');
   list.innerHTML = '';
-  figurativePrompts.forEach((item) => {
+  roomMap.fig.dataset.prompts.forEach((item) => {
     const row = document.createElement('div');
     row.className = 'summary-item';
     row.innerHTML = `
@@ -172,6 +247,54 @@ function populateFigurative() {
       </div>
     `;
     list.appendChild(row);
+  });
+}
+
+function populateSynAnt() {
+  const rows = document.getElementById('syn-rows');
+  rows.innerHTML = '';
+  roomMap.synAnt.dataset.targets.forEach((target) => {
+    const field = document.createElement('div');
+    field.className = 'field';
+    field.innerHTML = `
+      <label>Word: ${target.word}</label>
+      <input type="text" name="${target.word}-syn" placeholder="Synonym (e.g., ${target.examples.syn})" />
+      <input type="text" name="${target.word}-ant" placeholder="Antonym (e.g., ${target.examples.ant})" />
+    `;
+    rows.appendChild(field);
+  });
+  document.getElementById('syn-inline-hint').textContent = roomMap.synAnt.objective;
+}
+
+function populateStory() {
+  const requirementList = document.getElementById('story-requirements');
+  requirementList.innerHTML = '';
+  roomMap.story.dataset.constraints.forEach((constraint) => {
+    const chip = document.createElement('div');
+    chip.className = 'requirement-chip';
+    chip.dataset.key = constraint;
+    chip.dataset.met = 'false';
+    chip.innerHTML = `<span>⬜</span><span>${constraint}</span>`;
+    requirementList.appendChild(chip);
+  });
+  document.getElementById('simile-bank').textContent = roomMap.story.dataset.simileBank.join(' • ');
+}
+
+function populateTeacherCards() {
+  document.querySelectorAll('.teacher-card').forEach((card) => {
+    const roomId = card.dataset.room;
+    const room = roomMap[roomId];
+    if (!room) return;
+    const { teacher } = room;
+    const expectedList =
+      teacher.expected && typeof teacher.expected === 'object'
+        ? Object.values(teacher.expected).join('<br>')
+        : teacher.expected;
+    card.innerHTML = `
+      <strong>Teacher mode: ${room.title}</strong><br>
+      <em>Expected:</em> ${expectedList}<br>
+      <em>Rationale:</em> ${teacher.rationale}
+    `;
   });
 }
 
@@ -194,23 +317,25 @@ function setupChoiceHandlers() {
 function validateVocabulary(formData) {
   const answers = {};
   const missing = [];
-  vocabDefinitions.forEach((def) => {
+  roomMap.vocab.dataset.words.forEach((def) => {
     const value = formData.get(def.id);
-    if (!value) {
-      missing.push(def.id);
-    }
+    if (!value) missing.push(def.id);
     answers[def.id] = value;
   });
   if (missing.length) {
     setFeedback('Choose a match for every word before checking.', 'error');
+    recordAttempt('vocab', 'incomplete');
     return null;
   }
-  const isCorrect = vocabDefinitions.every((def) => answers[def.id] === def.id);
+  const isCorrect = roomMap.vocab.dataset.words.every((def) => answers[def.id] === def.id);
   if (!isCorrect) {
-    setFeedback('Some matches are off. Re-read the definitions and try again!', 'error');
+    setFeedback('Close! Re-read the bank—one or more pairings are off.', 'error');
+    recordMiss('vocab');
     return null;
   }
   setFeedback('Vault unlocked! You matched every word correctly.', 'success');
+  awardBadge('Vocabulary Pro');
+  recordAttempt('vocab', 'success');
   return answers;
 }
 
@@ -218,65 +343,97 @@ function validateGrammar(value) {
   const cleaned = value.trim();
   if (!cleaned) {
     setFeedback('Write your corrected sentence to continue.', 'error');
+    recordAttempt('grammar', 'incomplete');
     return null;
   }
+  const exemplar = roomMap.grammar.dataset.exemplar.toLowerCase();
   const lower = cleaned.toLowerCase();
-  const hasStart = lower.startsWith('the dog waited');
-  const hasDoor = lower.includes('by the door');
-  const hasReason = lower.includes('because') || lower.includes('since');
-  const hasPunctuation = /[.!?]$/.test(cleaned);
-  if (hasStart && hasDoor && hasReason && hasPunctuation) {
+  const hasBecause = lower.includes('because');
+  const startsWithCap = /^[A-Z]/.test(cleaned.trim());
+  const punctuation = /[.!?]$/.test(cleaned);
+  const verbFixed = lower.includes('hurried') || lower.includes('did not');
+  const clueFixed = lower.includes('was hidden') || lower.includes('was weak');
+
+  if (hasBecause && startsWithCap && punctuation && verbFixed && clueFixed) {
     setFeedback('Case closed! Your sentence is clear and correct.', 'success');
+    awardBadge('Grammar Fixer');
+    recordAttempt('grammar', 'success');
     return cleaned;
   }
-  setFeedback('Check capitalization, verb tense, and a connecting word like "because."', 'error');
+  setFeedback('Almost. Check capitalization, verb tense, and the cause-and-effect connector.', 'error');
+  recordMiss('grammar');
   return null;
 }
 
 function validateFigurative() {
   const answers = {};
-  for (const prompt of figurativePrompts) {
+  for (const prompt of roomMap.fig.dataset.prompts) {
     const selected = document.querySelector(`.choice[data-clue="${prompt.id}"][data-selected="true"]`);
     if (!selected) {
       setFeedback('Choose an answer for every clue.', 'error');
+      recordAttempt('fig', 'incomplete');
       return null;
     }
     answers[prompt.id] = selected.dataset.value;
   }
-  const allCorrect = figurativePrompts.every(
+  const allCorrect = roomMap.fig.dataset.prompts.every(
     (prompt) => answers[prompt.id] === prompt.answer,
   );
   if (!allCorrect) {
-    setFeedback('Not quite. Remember: similes use "like" or "as," metaphors compare directly, and personification gives objects human traits.', 'error');
+    setFeedback('Not quite. Similes use "like"/"as," metaphors compare directly, personification gives human traits.', 'error');
+    recordMiss('fig');
     return null;
   }
   setFeedback('Lab success! You spotted every figurative clue.', 'success');
+  awardBadge('Figurative Sleuth');
+  recordAttempt('fig', 'success');
   return answers;
 }
 
 function validateSynAnt(formData) {
-  const pairs = [
-    { word: 'brave', syn: formData.get('brave-syn'), ant: formData.get('brave-ant') },
-    { word: 'tiny', syn: formData.get('tiny-syn'), ant: formData.get('tiny-ant') },
-  ];
-  for (const { word, syn, ant } of pairs) {
+  const pairs = [];
+  for (const { word } of roomMap.synAnt.dataset.targets) {
+    const syn = formData.get(`${word}-syn`) || '';
+    const ant = formData.get(`${word}-ant`) || '';
     if (!syn.trim() || !ant.trim()) {
       setFeedback('Add both a synonym and antonym for each word.', 'error');
+      recordAttempt('synAnt', 'incomplete');
       return null;
     }
     if (syn.toLowerCase() === ant.toLowerCase()) {
       setFeedback('Synonym and antonym should be different ideas.', 'error');
+      recordMiss('synAnt');
       return null;
     }
+    pairs.push({ word, syn: syn.trim(), ant: ant.trim() });
   }
   setFeedback('Arena cleared! Words can flex both ways.', 'success');
+  awardBadge('Word Balancer');
+  recordAttempt('synAnt', 'success');
   return pairs;
+}
+
+function updateStoryChecklist(text) {
+  const lower = text.toLowerCase();
+  const chips = document.querySelectorAll('.requirement-chip');
+  chips.forEach((chip) => {
+    const key = chip.dataset.key;
+    let met = false;
+    if (key === 'forest') met = lower.includes('forest');
+    else if (key === 'mysterious sound') met = lower.includes('mysterious sound');
+    else if (key === 'reluctant') met = lower.includes('reluctant');
+    else if (key === 'simile') met = /\b(as [^.!?]{1,20} as|like [^.!?]{1,25})/i.test(text);
+    chip.dataset.met = met.toString();
+    chip.firstElementChild.textContent = met ? '✅' : '⬜';
+  });
 }
 
 function validateStory(text) {
   const cleaned = text.trim();
+  updateStoryChecklist(cleaned);
   if (!cleaned) {
     setFeedback('Write your story to finish the escape!', 'error');
+    recordAttempt('story', 'incomplete');
     return null;
   }
   const lower = cleaned.toLowerCase();
@@ -289,6 +446,9 @@ function validateStory(text) {
 
   if (hasForest && hasSound && hasReluctant && hasSimile && lengthOkay) {
     setFeedback('Story sealed! Every requirement is shining.', 'success');
+    awardBadge('Story Closer');
+    recordAttempt('story', 'success');
+    confetti();
     return cleaned;
   }
   const hints = [];
@@ -298,18 +458,33 @@ function validateStory(text) {
   if (!hasReluctant) hints.push('Use the word "reluctant."');
   if (!hasSimile) hints.push('Add a simile using "like" or "as."');
   setFeedback(hints.join(' '), 'error');
+  recordMiss('story');
   return null;
 }
 
 function goToNextRoom() {
   if (state.currentRoom < 4) {
+    showTransition(state.currentRoom + 1);
     state.currentRoom += 1;
     saveState();
-    showRoom(state.currentRoom);
+    setTimeout(() => showRoom(state.currentRoom), 900);
   } else {
     state.completed = true;
     showWin();
   }
+}
+
+function showTransition(nextRoomIndex) {
+  const nextRoom = currentCase[nextRoomIndex];
+  transitionTitle.textContent = `${nextRoom.title} unlocked`;
+  transitionBody.textContent = nextRoom.narrative;
+  transitionLabel.textContent = `Moving to Room ${nextRoomIndex + 1}`;
+  transitionProgress.style.width = '0%';
+  transitionOverlay.classList.remove('hidden');
+  setTimeout(() => {
+    transitionProgress.style.width = '100%';
+  }, 80);
+  setTimeout(() => transitionOverlay.classList.add('hidden'), 1200);
 }
 
 function showWin() {
@@ -322,6 +497,7 @@ function showWin() {
   refreshRoomStatus();
   updateStartButtonLabel();
   saveState();
+  confetti();
 }
 
 function renderSummary() {
@@ -364,12 +540,19 @@ function renderSummary() {
   [badge, vocab, grammar, figurative, pairs, story].forEach((item) => summary.appendChild(item));
 }
 
-function restartGame({ keepPlayer = true } = {}) {
+function restartGame({ keepPlayer = true, randomizeCase = false } = {}) {
   const player = keepPlayer ? state.player : { ...defaultState.player };
-  state = { ...defaultState, player };
-  document.getElementById('win-screen').classList.add('hidden');
+  state = {
+    ...defaultState,
+    player,
+    caseSeed: randomizeCase ? Date.now() : state.caseSeed,
+    caseData: randomizeCase ? null : state.caseData,
+  };
+  buildCase({ randomize: randomizeCase });
+  hydrateContent();
   setFeedback('Progress cleared. You are back at Room 1.', 'info');
   showRoom(0);
+  saveState();
 }
 
 function roomStateForIndex(index) {
@@ -438,28 +621,102 @@ function hydrateAnswers() {
   if (synAnt) {
     const form = document.getElementById('syn-ant-form');
     synAnt.forEach((pair) => {
-      form.elements[`${pair.word}-syn`].value = pair.syn;
-      form.elements[`${pair.word}-ant`].value = pair.ant;
+      if (form.elements[`${pair.word}-syn`]) form.elements[`${pair.word}-syn`].value = pair.syn;
+      if (form.elements[`${pair.word}-ant`]) form.elements[`${pair.word}-ant`].value = pair.ant;
     });
   }
   if (story) {
     document.getElementById('story-input').value = story;
+    updateStoryChecklist(story);
   }
 }
 
-function init() {
+function awardBadge(label) {
+  if (state.badges.includes(label)) return;
+  state.badges.push(label);
+  renderBadges();
+  saveState();
+}
+
+function renderBadges() {
+  badgeShelf.innerHTML = state.badges
+    .map((badge) => `<span class="micro-badge">${badge}</span>`)
+    .join('');
+}
+
+function recordAttempt(roomId, outcome) {
+  const start = roomStartTime;
+  const duration = start ? Math.round((Date.now() - start) / 1000) : null;
+  state.telemetry.attempts[roomId] = (state.telemetry.attempts[roomId] || 0) + 1;
+  if (duration !== null) {
+    state.telemetry.durations[roomId] = state.telemetry.durations[roomId] || [];
+    state.telemetry.durations[roomId].push(duration);
+  }
+  saveState();
+  updateTelemetryReadout();
+}
+
+function recordMiss(roomId) {
+  state.telemetry.misses[roomId] = (state.telemetry.misses[roomId] || 0) + 1;
+  recordAttempt(roomId, 'miss');
+}
+
+function updateTelemetryReadout() {
+  const { attempts, durations, misses } = state.telemetry;
+  const lines = Object.keys(attempts).map((roomId) => {
+    const tries = attempts[roomId];
+    const missCount = misses[roomId] || 0;
+    const times = durations[roomId] || [];
+    const avg = times.length ? `${Math.round(times.reduce((a, b) => a + b, 0) / times.length)}s avg` : '—';
+    return `${roomMap[roomId]?.title || roomId}: ${tries} attempts, ${missCount} misses, ${avg}`;
+  });
+  telemetryReadout.textContent = lines.join('\n');
+}
+
+function exportTelemetry() {
+  const payload = {
+    version: gameData.version,
+    player: state.player,
+    telemetry: state.telemetry,
+    timestamp: new Date().toISOString(),
+  };
+  const text = JSON.stringify(payload, null, 2);
+  navigator.clipboard?.writeText(text).catch(() => {});
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'keyville-telemetry.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setFeedback('Telemetry exported. Clipboard + download ready.', 'success');
+}
+
+function hydrateContent() {
+  document.getElementById('vocab-objective').textContent = roomMap.vocab.objective;
+  document.getElementById('grammar-objective').textContent = roomMap.grammar.objective;
+  document.getElementById('grammar-flawed').textContent = roomMap.grammar.dataset.flawed;
+  document.getElementById('fig-objective').textContent = roomMap.fig.objective;
+  document.getElementById('syn-objective').textContent = roomMap.synAnt.objective;
+  document.getElementById('story-objective').textContent = roomMap.story.objective;
   populateVocabulary();
   populateFigurative();
+  populateSynAnt();
+  populateStory();
+  populateTeacherCards();
   setupChoiceHandlers();
+  renderBadges();
   hydrateAnswers();
-  hydratePlayerForm();
-  refreshRoomStatus();
-  if (state.completed) {
-    showWin();
-  } else {
-    showRoom(state.currentRoom);
-  }
+  updateTelemetryReadout();
+}
 
+function toggleTeacherMode() {
+  document.body.classList.toggle('teacher-mode');
+}
+
+function setupEvents() {
   document.getElementById('profile-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const name = playerNameField.value.trim();
@@ -489,6 +746,10 @@ function init() {
   resetButton.addEventListener('click', () => {
     restartGame({ keepPlayer: true });
     updateStartButtonLabel();
+  });
+
+  newCaseButton.addEventListener('click', () => {
+    restartGame({ keepPlayer: true, randomizeCase: true });
   });
 
   document.getElementById('vocab-form').addEventListener('submit', (e) => {
@@ -532,6 +793,10 @@ function init() {
     }
   });
 
+  document.getElementById('story-input').addEventListener('input', (e) => {
+    updateStoryChecklist(e.target.value);
+  });
+
   document.getElementById('story-submit').addEventListener('click', () => {
     const text = document.getElementById('story-input').value;
     const result = validateStory(text);
@@ -543,6 +808,21 @@ function init() {
   });
 
   document.getElementById('restart').addEventListener('click', restartGame);
+  teacherToggle.addEventListener('click', toggleTeacherMode);
+  exportTelemetryButton.addEventListener('click', exportTelemetry);
+}
+
+function init() {
+  buildCase();
+  hydrateContent();
+  hydratePlayerForm();
+  refreshRoomStatus();
+  if (state.completed) {
+    showWin();
+  } else {
+    showRoom(state.currentRoom);
+  }
+  setupEvents();
 }
 
 document.addEventListener('DOMContentLoaded', init);
