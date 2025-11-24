@@ -10,13 +10,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div id="transition-overlay" class="hidden" role="status" aria-live="polite">
+    <div class="transition-card">
+      <p class="eyebrow" id="transition-label">Transition</p>
+      <h3 id="transition-title">Next room unlocked</h3>
+      <p id="transition-body">Get ready for the next challenge.</p>
+      <div class="transition-progress">
+        <div class="transition-progress-fill" id="transition-progress"></div>
+      </div>
+    </div>
+  </div>
   <div class="page">
     <header>
       <div class="badge">Grade 6</div>
       <div>
         <p class="eyebrow">Language Game</p>
         <h1>The Lexicon Detective Escape Room</h1>
-        <p class="subtitle">Crack every clue across five rooms to earn your Chief Language Officer badge!</p>
+        <p class="subtitle">Crack every clue across five rooms to earn your Chief Language Officer badge! Content and rubrics are locked to the canonical spec below.</p>
       </div>
     </header>
 
@@ -45,6 +55,7 @@
                 <button class="primary" type="submit">Save badge</button>
                 <button class="secondary" type="button" id="start-button">Start / Resume adventure</button>
                 <button class="ghost" type="button" id="reset-progress">Reset progress</button>
+                <button class="ghost" type="button" id="new-case">New case</button>
               </div>
             </form>
             <div class="orientation">
@@ -53,6 +64,7 @@
                 <li>5 rooms, each with instant feedback and auto-save.</li>
                 <li>Use the Start / Resume button to jump back into the next task.</li>
                 <li>Need a fresh try? Reset progress without losing your badge.</li>
+                <li>Teacher mode reveals rubrics, answers, and rationales without touching the student flow.</li>
               </ul>
             </div>
           </section>
@@ -65,6 +77,7 @@
             <div class="progress">
               <div class="progress-fill" id="progress-fill" style="width: 20%"></div>
             </div>
+            <div id="badge-shelf" class="badge-shelf" aria-live="polite"></div>
           </section>
 
           <section class="card" id="room-0">
@@ -75,35 +88,14 @@
               </div>
               <span class="tag">Match &amp; Unlock</span>
             </div>
-            <p class="lead">Match each word with the correct definition to swing the vault door open.</p>
+            <p class="lead" id="vocab-objective">Match each word with the correct definition to swing the vault door open.</p>
             <form id="vocab-form" class="stack">
-              <div class="match-row">
-                <div class="definition">1. Elated</div>
-                <select name="elated" aria-label="Definition for elated">
-                  <option value="">Choose the match</option>
-                </select>
-              </div>
-              <div class="match-row">
-                <div class="definition">2. Cautious</div>
-                <select name="cautious" aria-label="Definition for cautious">
-                  <option value="">Choose the match</option>
-                </select>
-              </div>
-              <div class="match-row">
-                <div class="definition">3. Resourceful</div>
-                <select name="resourceful" aria-label="Definition for resourceful">
-                  <option value="">Choose the match</option>
-                </select>
-              </div>
-              <div class="match-row">
-                <div class="definition">4. Obstacle</div>
-                <select name="obstacle" aria-label="Definition for obstacle">
-                  <option value="">Choose the match</option>
-                </select>
-              </div>
+              <div id="vocab-rows" class="stack"></div>
               <div class="options-list" id="definition-options"></div>
+              <div class="inline-hints" id="vocab-inline-hint"></div>
               <button class="primary" type="submit">Check matches</button>
             </form>
+            <div class="teacher-card" data-room="vocab"></div>
           </section>
 
           <section class="card hidden" id="room-1">
@@ -114,16 +106,17 @@
               </div>
               <span class="tag">Fix It</span>
             </div>
-            <p class="lead">Repair the sentence so it follows grammar rules. Keep meaning the same.</p>
+            <p class="lead" id="grammar-objective">Repair the sentence so it follows grammar rules. Keep meaning the same.</p>
             <div class="prompt-box">
               <p class="eyebrow">Flawed sentence</p>
-              <p class="quote">the dog wait by the door, he was hungry for treats</p>
+              <p class="quote" id="grammar-flawed"></p>
             </div>
             <label class="field">
               <span>Your corrected sentence</span>
               <input type="text" id="grammar-input" placeholder="Write the corrected sentence" />
             </label>
             <button class="primary" id="grammar-check">Submit correction</button>
+            <div class="teacher-card" data-room="grammar"></div>
           </section>
 
           <section class="card hidden" id="room-2">
@@ -134,9 +127,10 @@
               </div>
               <span class="tag">Identify</span>
             </div>
-            <p class="lead">Pick whether each clue is a simile, metaphor, or personification.</p>
+            <p class="lead" id="fig-objective">Pick whether each clue is a simile, metaphor, or personification.</p>
             <div id="figurative-list" class="stack"></div>
             <button class="primary" id="figurative-check">Lock in answers</button>
+            <div class="teacher-card" data-room="fig"></div>
           </section>
 
           <section class="card hidden" id="room-3">
@@ -147,22 +141,13 @@
               </div>
               <span class="tag">Double Duty</span>
             </div>
-            <p class="lead">For each target word, enter one synonym and one antonym.</p>
+            <p class="lead" id="syn-objective">For each target word, enter one synonym and one antonym.</p>
             <form id="syn-ant-form" class="stack">
-              <div class="dual-field">
-                <div class="field">
-                  <label>Word: Brave</label>
-                  <input type="text" name="brave-syn" placeholder="Synonym (e.g., bold)" />
-                  <input type="text" name="brave-ant" placeholder="Antonym (e.g., fearful)" />
-                </div>
-                <div class="field">
-                  <label>Word: Tiny</label>
-                  <input type="text" name="tiny-syn" placeholder="Synonym (e.g., small)" />
-                  <input type="text" name="tiny-ant" placeholder="Antonym (e.g., huge)" />
-                </div>
-              </div>
+              <div class="dual-field" id="syn-rows"></div>
+              <div class="inline-hints" id="syn-inline-hint"></div>
               <button class="primary" type="submit">Submit pairs</button>
             </form>
+            <div class="teacher-card" data-room="synAnt"></div>
           </section>
 
           <section class="card hidden" id="room-4">
@@ -173,12 +158,18 @@
               </div>
               <span class="tag">Create</span>
             </div>
-            <p class="lead">Write a 4–5 sentence micro-story that includes a forest, a mysterious sound, the word "reluctant," and one simile.</p>
+            <p class="lead" id="story-objective">Write a 4–5 sentence micro-story that includes a forest, a mysterious sound, the word "reluctant," and one simile.</p>
+            <div class="requirements" id="story-requirements"></div>
+            <div class="prompt-box simile-bank">
+              <p class="eyebrow">Simile bank</p>
+              <p id="simile-bank"></p>
+            </div>
             <label class="field">
               <span>Your story</span>
               <textarea id="story-input" rows="6" placeholder="Spin your mini story here..."></textarea>
             </label>
             <button class="primary" id="story-submit">Complete the journey</button>
+            <div class="teacher-card" data-room="story"></div>
           </section>
 
           <section class="card hidden" id="win-screen">
@@ -219,11 +210,17 @@
                 <li>Your progress auto-saves—refreshing won't reset the journey.</li>
               </ul>
             </div>
+            <div class="controls">
+              <button class="secondary" type="button" id="teacher-toggle">Teacher mode</button>
+              <button class="secondary" type="button" id="export-telemetry">Export telemetry</button>
+            </div>
+            <div class="telemetry" id="telemetry-readout"></div>
           </section>
         </aside>
       </div>
     </main>
   </div>
+  <script src="gameData.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
