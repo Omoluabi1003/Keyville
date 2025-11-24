@@ -509,3 +509,72 @@ blockquote {
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+.scaffold-controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.micro-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.micro-step {
+  border: 2px dashed var(--border);
+  border-radius: 1rem;
+  padding: 0.85rem 0.95rem;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.micro-step-header {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.micro-step-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(125, 211, 255, 0.6), rgba(255, 139, 209, 0.6));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #1c1a33;
+  border: 2px solid var(--border);
+}
+
+.micro-step-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+}
+
+.tooltip-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: rgba(255, 255, 255, 0.9);
+  cursor: help;
+  font-size: 0.85rem;
+}

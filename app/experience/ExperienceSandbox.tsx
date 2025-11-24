@@ -69,6 +69,44 @@ const vocabulary = [
   }
 ];
 
+const scaffoldSteps = [
+  {
+    id: 'brainstorm',
+    title: 'Brainstorm',
+    prompt: 'Jot three fast clue angles in 45 seconds.',
+    tooltip: 'Speed-list ideas with sensory words so your brain keeps moving.',
+    sample: 'Gate screech warns the villain, flashlights sweep, partner waits to text a warning.'
+  },
+  {
+    id: 'outline',
+    title: 'Outline',
+    prompt: 'Pick the best idea and sketch a beginning, middle, end.',
+    tooltip: 'Use quick bullet points: problem, action, reveal.',
+    sample: 'Start: villain hears creak; Middle: hides blueprint; End: sends coded email.'
+  },
+  {
+    id: 'draft',
+    title: 'Draft',
+    prompt: 'Write 2-3 sentences in the antagonist’s voice.',
+    tooltip: 'Keep sentences short; add one detail that shows emotion.',
+    sample: 'I froze as the iron gate groaned—my blueprint still on the desk. Their armor clanged like a dare.'
+  },
+  {
+    id: 'revise',
+    title: 'Revise',
+    prompt: 'Swap one vague word, add a sensory cue, and check sequence.',
+    tooltip: 'Look for “thing,” “stuff,” or missing transitions to clean up.',
+    sample: 'Replace “loud” with “metallic” and add “before they reached the porch.”'
+  },
+  {
+    id: 'reflect',
+    title: 'Reflect',
+    prompt: 'Write one sentence on what changed and why it works better.',
+    tooltip: 'Name the fix (detail, order, tone) so you remember it next time.',
+    sample: 'Adding the metallic creak made the danger obvious without saying “scary.”'
+  }
+];
+
 export default function ExperienceSandbox() {
   const [codename, setCodename] = useState('Skyline Fox');
   const [badge, setBadge] = useState('Rookie Detective');
@@ -76,6 +114,8 @@ export default function ExperienceSandbox() {
   const [progressLevel, setProgressLevel] = useState(0);
   const [currentRoomIndex, setCurrentRoomIndex] = useState(0);
   const [vocabAnswers, setVocabAnswers] = useState<Record<string, string>>({});
+  const [scaffoldingEnabled, setScaffoldingEnabled] = useState(true);
+  const [skipForAdvanced, setSkipForAdvanced] = useState(false);
 
   const randomPrompt = useMemo(() => sandboxChallenge, []);
 
@@ -188,6 +228,66 @@ export default function ExperienceSandbox() {
                 </div>
                 );
               })}
+            </div>
+          </Section>
+
+          <Section
+            title="Scaffolded challenge flow"
+            subtitle="Short micro-steps before you submit the room"
+          >
+            <div className="card">
+              <div className="scaffold-controls" role="group" aria-label="Scaffolding controls">
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={scaffoldingEnabled}
+                    onChange={(event) => setScaffoldingEnabled(event.target.checked)}
+                  />
+                  <span>Show steps for students</span>
+                </label>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={skipForAdvanced}
+                    onChange={(event) => setSkipForAdvanced(event.target.checked)}
+                    disabled={!scaffoldingEnabled}
+                  />
+                  <span>Skip scaffolding for advanced class</span>
+                </label>
+              </div>
+
+              {scaffoldingEnabled && !skipForAdvanced ? (
+                <ol className="micro-steps">
+                  {scaffoldSteps.map((step, index) => (
+                    <li key={step.id} className="micro-step">
+                      <div className="micro-step-header">
+                        <div className="micro-step-number" aria-label={`Step ${index + 1}`}>
+                          {index + 1}
+                        </div>
+                        <div>
+                          <div className="micro-step-title">
+                            <span>{step.title}</span>
+                            <span
+                              className="tooltip-trigger"
+                              role="img"
+                              aria-label={step.tooltip}
+                              title={step.tooltip}
+                            >
+                              ℹ️
+                            </span>
+                          </div>
+                          <p className="small">{step.prompt}</p>
+                        </div>
+                      </div>
+                      <p className="small">Sample: {step.sample}</p>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="small" aria-live="polite">
+                  Scaffolding is off. Students can jump straight to the room submission while teachers monitor pacing.
+                </p>
+              )}
             </div>
           </Section>
 
