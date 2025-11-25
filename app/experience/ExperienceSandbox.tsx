@@ -4,6 +4,29 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import Section from '../../components/Section';
 
+type BrowserSpeechRecognitionEvent = {
+  results: {
+    [key: number]: {
+      [key: number]: {
+        transcript: string;
+      };
+    };
+  };
+};
+
+type BrowserSpeechRecognition = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  abort: () => void;
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
+  onerror: ((event: unknown) => void) | null;
+  onend: (() => void) | null;
+};
+
+type SpeechRecognitionConstructor = new () => BrowserSpeechRecognition;
+
 const questSteps = [
   {
     id: 'choose',
@@ -126,7 +149,7 @@ export default function ExperienceSandbox() {
   const [suggestionLog, setSuggestionLog] = useState<string[]>([]);
   const [highContrast, setHighContrast] = useState(false);
   const [dyslexicFont, setDyslexicFont] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -211,10 +234,16 @@ export default function ExperienceSandbox() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) return;
-    const SpeechRecognitionClass =
-      // @ts-ignore: vendor prefixed types are not in lib dom typings
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const speechWindow = window as Window & {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    };
+
+    if (!('webkitSpeechRecognition' in speechWindow || 'SpeechRecognition' in speechWindow)) return;
+
+    const SpeechRecognitionClass = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
+    if (!SpeechRecognitionClass) return;
+
     recognitionRef.current = new SpeechRecognitionClass();
     recognitionRef.current.continuous = false;
     recognitionRef.current.interimResults = false;
@@ -251,7 +280,7 @@ export default function ExperienceSandbox() {
   const startVoiceInput = (field: 'brainstorm' | 'draft' | 'revision' | 'reflection') => {
     if (!recognitionRef.current) return;
 
-    recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+    recognitionRef.current.onresult = (event: BrowserSpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript;
 
       if (field === 'brainstorm') setBrainstorm((prev) => `${prev} ${transcript}`.trim());
