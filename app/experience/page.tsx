@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ExperienceSandbox from './ExperienceSandbox';
+import KidTutorial from './KidTutorial';
 
 export const metadata: Metadata = {
   title: 'KEYVILLE · Project by ETL GIS Consulting LLC | Experience Sandbox',
@@ -15,6 +16,7 @@ export default function ExperiencePage() {
     <div>
       <h1>Experience KEYVILLE in 3 steps</h1>
       <p className="small">No login required. Use your keyboard to tab through each element; controls are screen-reader ready.</p>
+      <KidTutorial />
       <ExperienceSandbox />
     </div>
   );
