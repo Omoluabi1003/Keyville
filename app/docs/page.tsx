@@ -216,6 +216,107 @@ export default function DocsPage() {
     }
   ];
 
+  const keyvilleUpgrades = [
+    {
+      id: 1,
+      title: 'Progress Tracking Dashboard',
+      description: 'Simple visual profile showing earned badges, completed quests, streak counter, and writing stats.',
+      priority: 'High',
+      difficulty: 'Low–Medium',
+      whyFor6thGraders:
+        "Gives kids a sense of growth and accomplishment; reduces frustration of 'starting over' each session.",
+      techNotes: 'LocalStorage or IndexedDB tied to nickname; no login required.'
+    },
+    {
+      id: 2,
+      title: 'Multimedia & Drawing Prompts',
+      description: 'Optional drawing canvas or image upload inside quests for visual storytelling.',
+      priority: 'High',
+      difficulty: 'Medium',
+      whyFor6thGraders: 'Appeals to visual learners and makes writing feel less intimidating.',
+      techNotes: 'Fabric.js or Excalidraw integration; save as base64 or blob.'
+    },
+    {
+      id: 3,
+      title: 'Accessibility Features',
+      description: 'Text-to-speech for prompts, high-contrast mode, dyslexia-friendly font, keyboard navigation.',
+      priority: 'High',
+      difficulty: 'Low',
+      whyFor6thGraders: 'Ensures every student can use it independently.',
+      techNotes: 'Web Speech API and CSS variables for theming.'
+    },
+    {
+      id: 4,
+      title: 'Parent/Teacher Shareable Report',
+      description: "One-click generate or share a link/PDF of a child's badges and writing progress.",
+      priority: 'High',
+      difficulty: 'Low–Medium',
+      whyFor6thGraders: 'Gives parents and teachers visibility without complex accounts.',
+      techNotes: 'Generate unique short code backed by Vercel KV or Firebase.'
+    },
+    {
+      id: 5,
+      title: 'Themed Quest Packs & Variety',
+      description: 'Seasonal, topic-based, or interest-based packs (Space, Fantasy, Sports, etc.) with 5–10 quests each.',
+      priority: 'Medium',
+      difficulty: 'Medium',
+      whyFor6thGraders: 'Prevents boredom and matches school curriculum.',
+      techNotes: 'JSON-based quest database with tags and rotation.'
+    },
+    {
+      id: 6,
+      title: 'Offline Mode (PWA)',
+      description: 'Installable progressive web app with offline quest access and auto-sync.',
+      priority: 'Medium',
+      difficulty: 'Medium',
+      whyFor6thGraders: 'Works on school buses, travel, or spotty Wi-Fi.',
+      techNotes: 'Vercel hosting paired with Workbox service worker caching.'
+    },
+    {
+      id: 7,
+      title: 'Gamification Boost',
+      description: 'Anonymous opt-in leaderboards, weekly challenges, and collaborative pair-writing mode.',
+      priority: 'Medium',
+      difficulty: 'Medium–High',
+      whyFor6thGraders: 'Healthy competition and social motivation.',
+      techNotes: 'Requires lightweight backend such as Supabase or Vercel KV.'
+    },
+    {
+      id: 8,
+      title: 'Mobile & Voice Input Optimization',
+      description: 'Touch-friendly UI plus voice-to-text dictation for answers.',
+      priority: 'High',
+      difficulty: 'Low–Medium',
+      whyFor6thGraders: 'Reduces typing barrier and matches how kids already use devices.',
+      techNotes: 'Web Speech Recognition API combined with responsive CSS.'
+    },
+    {
+      id: 9,
+      title: 'User-Generated Quest Suggestions',
+      description: 'Moderated “Suggest a Quest” form with inclusive, diverse prompt rotation.',
+      priority: 'Low–Medium',
+      difficulty: 'Medium',
+      whyFor6thGraders: 'Kids feel ownership and see their ideas come to life.',
+      techNotes: 'Simple submission form routed to Airtable or Google Form for moderation.'
+    },
+    {
+      id: 10,
+      title: 'Anonymous Analytics for Teachers',
+      description: 'Class-level insights (popular words, completion rates) without identifying students.',
+      priority: 'Low',
+      difficulty: 'Medium',
+      whyFor6thGraders: 'Helps teachers integrate Keyville into curriculum.',
+      techNotes: 'Use Vercel Analytics with aggregated reporting dashboard.'
+    }
+  ];
+
+  const upgradeMetadata = {
+    generatedFor: 'Keyville',
+    targetAudience: '6th graders (ages 11–12)',
+    generatedDate: '2025-11-25',
+    totalRecommendations: 10
+  };
+
   return (
     <div>
       <h1>Documentation</h1>
@@ -298,6 +399,33 @@ export default function DocsPage() {
             </div>
           ))}
         </div>
+      </Section>
+
+      <Section
+        title="Upgrade ideas for 6th graders"
+        subtitle={`${upgradeMetadata.totalRecommendations} recommendations generated for ${upgradeMetadata.generatedFor} · ${upgradeMetadata.generatedDate}`}
+      >
+        <div className="card-grid">
+          {keyvilleUpgrades.map(({ id, title, description, priority, difficulty, whyFor6thGraders, techNotes }) => (
+            <div className="card" key={id}>
+              <h3>{title}</h3>
+              <p className="small" style={{ marginBottom: '0.5rem' }}>
+                <strong>Priority:</strong> {priority} · <strong>Difficulty:</strong> {difficulty}
+              </p>
+              <p className="small" style={{ marginBottom: '0.5rem' }}>{description}</p>
+              <p className="small" style={{ marginBottom: '0.5rem' }}>
+                <strong>Why for 6th graders:</strong> {whyFor6thGraders}
+              </p>
+              <p className="small">
+                <strong>Tech notes:</strong> {techNotes}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="small" style={{ marginTop: '1rem' }}>
+          Target audience: {upgradeMetadata.targetAudience}. Designed to keep students motivated while minimizing classroom
+          setup overhead.
+        </p>
       </Section>
 
       <CTAButton href="/about" variant="secondary">

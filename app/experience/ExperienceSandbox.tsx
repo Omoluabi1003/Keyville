@@ -1,6 +1,7 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import Section from '../../components/Section';
 
 const questSteps = [
@@ -60,6 +61,36 @@ const initialBadges = [
 
 const streakDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+const questPacks = [
+  {
+    id: 'space-signals',
+    title: 'Space Signals',
+    theme: 'Space',
+    quests: ['Meteor Mail', 'Moon Base Mystery', 'Calm Comet', 'Star Whisper', 'Lost Satellite'],
+    skills: ['Sensory detail', 'Sequence', 'Word choice']
+  },
+  {
+    id: 'fantasy-friends',
+    title: 'Fantasy Friends',
+    theme: 'Fantasy',
+    quests: ['Dragon Postcard', 'Kind Wizard', 'Brave Sprite', 'Mystic Door', 'Potion Shop'],
+    skills: ['Dialogue', 'Character feelings', 'Description']
+  },
+  {
+    id: 'sports-day',
+    title: 'Sports Day',
+    theme: 'Sports',
+    quests: ['Final Lap', 'Team Huddle', 'Lucky Cleats', 'Coach Pep Talk', 'Rookie Move'],
+    skills: ['Action verbs', 'Sequence words', 'Reflection']
+  }
+];
+
+const leaderboard = [
+  { codename: 'Comet Koala', completions: 12, streak: 4 },
+  { codename: 'Bold Llama', completions: 10, streak: 3 },
+  { codename: 'Neon Owl', completions: 8, streak: 2 }
+];
+
 export default function ExperienceSandbox() {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [selectedTopic, setSelectedTopic] = useState('Mystery message');
@@ -72,17 +103,123 @@ export default function ExperienceSandbox() {
   const [scaffoldsOpen, setScaffoldsOpen] = useState(true);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [listeningField, setListeningField] = useState<string | null>(null);
+  const [gallery, setGallery] = useState<string[]>([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentPack, setCurrentPack] = useState(questPacks[0]);
+  const [cachedQuests, setCachedQuests] = useState<string[]>(questPacks[0].quests);
+  const [isOffline, setIsOffline] = useState(false);
+  const [progressStats, setProgressStats] = useState({
+    questsCompleted: 0,
+    badgesEarned: initialBadges.length,
+    streak: 1,
+    lastCompleted: '',
+    wordsWritten: 0
+  });
+  const [analytics, setAnalytics] = useState({
+    completions: 0,
+    hintOpens: 0,
+    voiceNotes: 0
+  });
+  const [suggestion, setSuggestion] = useState('');
+  const [suggestionLog, setSuggestionLog] = useState<string[]>([]);
+  const [highContrast, setHighContrast] = useState(false);
+  const [dyslexicFont, setDyslexicFont] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
 
   const progress = Math.round(((activeStepIndex + 1) / questSteps.length) * 100);
   const activeStep = questSteps[activeStepIndex];
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    const synth = window.speechSynthesis;
-    const handleVoices = () => setSpeechSupported(synth.getVoices().length > 0);
-    handleVoices();
-    synth.addEventListener('voiceschanged', handleVoices);
-    return () => synth.removeEventListener('voiceschanged', handleVoices);
+    if (typeof window === 'undefined') return;
+
+    if ('speechSynthesis' in window) {
+      const synth = window.speechSynthesis;
+      const handleVoices = () => setSpeechSupported(synth.getVoices().length > 0);
+      handleVoices();
+      synth.addEventListener('voiceschanged', handleVoices);
+      return () => synth.removeEventListener('voiceschanged', handleVoices);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const savedProgress = window.localStorage.getItem('kv-progress');
+    const savedGallery = window.localStorage.getItem('kv-drawings');
+    const savedSuggestions = window.localStorage.getItem('kv-suggestions');
+    const savedAnalytics = window.localStorage.getItem('kv-analytics');
+    const savedPack = window.localStorage.getItem('kv-cached-pack');
+
+    if (savedProgress) setProgressStats(JSON.parse(savedProgress));
+    if (savedGallery) setGallery(JSON.parse(savedGallery));
+    if (savedSuggestions) setSuggestionLog(JSON.parse(savedSuggestions));
+    if (savedAnalytics) setAnalytics(JSON.parse(savedAnalytics));
+    if (savedPack) {
+      const parsedPack = JSON.parse(savedPack);
+      setCurrentPack(parsedPack);
+      setCachedQuests(parsedPack.quests ?? questPacks[0].quests);
+    }
+
+    setIsOffline(!window.navigator.onLine);
+
+    const handleNetwork = () => setIsOffline(!window.navigator.onLine);
+    window.addEventListener('online', handleNetwork);
+    window.addEventListener('offline', handleNetwork);
+
+    return () => {
+      window.removeEventListener('online', handleNetwork);
+      window.removeEventListener('offline', handleNetwork);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('kv-progress', JSON.stringify(progressStats));
+  }, [progressStats]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('kv-drawings', JSON.stringify(gallery));
+  }, [gallery]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('kv-suggestions', JSON.stringify(suggestionLog));
+  }, [suggestionLog]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('kv-analytics', JSON.stringify(analytics));
+  }, [analytics]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    document.body.classList.toggle('high-contrast', highContrast);
+    document.body.classList.toggle('dyslexic-font', dyslexicFont);
+
+    return () => {
+      document.body.classList.remove('high-contrast');
+      document.body.classList.remove('dyslexic-font');
+    };
+  }, [highContrast, dyslexicFont]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) return;
+    const SpeechRecognitionClass =
+      // @ts-ignore: vendor prefixed types are not in lib dom typings
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognitionClass();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'en-US';
+    setVoiceSupported(true);
   }, []);
 
   useEffect(() => {
@@ -111,6 +248,107 @@ export default function ExperienceSandbox() {
     synth.speak(utterance);
   };
 
+  const startVoiceInput = (field: 'brainstorm' | 'draft' | 'revision' | 'reflection') => {
+    if (!recognitionRef.current) return;
+
+    recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript;
+
+      if (field === 'brainstorm') setBrainstorm((prev) => `${prev} ${transcript}`.trim());
+      if (field === 'draft') setDraft((prev) => `${prev} ${transcript}`.trim());
+      if (field === 'revision') setRevision((prev) => `${prev} ${transcript}`.trim());
+      if (field === 'reflection') setReflection((prev) => `${prev} ${transcript}`.trim());
+
+      setAnalytics((current) => ({ ...current, voiceNotes: current.voiceNotes + 1 }));
+      setListeningField(null);
+    };
+
+    recognitionRef.current.onerror = () => setListeningField(null);
+    recognitionRef.current.onend = () => setListeningField(null);
+    setListeningField(field);
+    recognitionRef.current.start();
+  };
+
+  const handleDraw = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (!isDrawing) {
+      lastPointRef.current = { x, y };
+      return;
+    }
+
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    ctx.strokeStyle = '#1c1a33';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    const lastPoint = lastPointRef.current ?? { x, y };
+    ctx.moveTo(lastPoint.x, lastPoint.y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    lastPointRef.current = { x, y };
+  };
+
+  const startDrawing = (event: PointerEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    handleDraw(event);
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+    lastPointRef.current = null;
+  };
+
+  const saveDrawing = () => {
+    if (!canvasRef.current) return;
+    const dataUrl = canvasRef.current.toDataURL('image/png');
+    setGallery((items) => [dataUrl, ...items].slice(0, 6));
+  };
+
+  const changePack = (packId: string) => {
+    const chosen = questPacks.find((pack) => pack.id === packId);
+    if (!chosen) return;
+    setCurrentPack(chosen);
+    setCachedQuests(chosen.quests);
+    window.localStorage.setItem('kv-cached-pack', JSON.stringify(chosen));
+  };
+
+  const buildShareLink = () => {
+    if (typeof window === 'undefined') return '';
+    const payload = {
+      questsCompleted: progressStats.questsCompleted,
+      badgesEarned: progressStats.badgesEarned,
+      streak: progressStats.streak,
+      favoriteQuest: selectedTopic,
+      pack: currentPack.title
+    };
+    return `${window.location.origin}/experience?report=${btoa(JSON.stringify(payload))}`;
+  };
+
+  const copyReport = async () => {
+    const link = buildShareLink();
+    if (!link) return;
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setToast('Shareable report link copied!');
+    } catch (error) {
+      console.error(error);
+      setToast('Copy failed — you can still share this screen.');
+    }
+  };
+
+  const submitSuggestion = () => {
+    if (!suggestion.trim()) return;
+    setSuggestionLog((current) => [suggestion.trim(), ...current].slice(0, 5));
+    setSuggestion('');
+  };
+
   const badgeByStep: Record<string, { id: string; label: string; detail: string }> = {
     brainstorm: { id: 'idea-jumper', label: 'Idea Jumper', detail: 'You brainstormed three fast ideas.' },
     write: { id: 'draft-driver', label: 'Draft Driver', detail: 'You turned ideas into sentences.' },
@@ -124,6 +362,35 @@ export default function ExperienceSandbox() {
 
     if (badgeByStep[stepId]) {
       addBadge(badgeByStep[stepId]);
+      setProgressStats((current) => ({
+        ...current,
+        badgesEarned: current.badgesEarned + (current.badgesEarned < 50 ? 1 : 0)
+      }));
+    }
+
+    if (stepId === 'reflect') {
+      const today = new Date().toISOString().slice(0, 10);
+      setProgressStats((stats) => {
+        const streak = stats.lastCompleted === today ? stats.streak : stats.streak + 1;
+        const wordsWritten = stats.wordsWritten + draft.split(' ').length + revision.split(' ').length;
+        return {
+          questsCompleted: stats.questsCompleted + 1,
+          badgesEarned: stats.badgesEarned,
+          streak,
+          lastCompleted: today,
+          wordsWritten
+        };
+      });
+
+      setAnalytics((current) => ({ ...current, completions: current.completions + 1 }));
+
+      setToast('Quest saved! Progress stays on this device.');
+      setActiveStepIndex(0);
+      setBrainstorm('');
+      setDraft('');
+      setRevision('');
+      setReflection('');
+      return;
     }
 
     setActiveStepIndex(nextIndex);
@@ -183,6 +450,29 @@ export default function ExperienceSandbox() {
         </div>
       </header>
 
+      <div className="card status-card" style={{ marginBottom: '1rem' }}>
+        <div className="progress-wrap">
+          <div>
+            <p className="small">Comfort toggles</p>
+            <h3>Accessibility ready</h3>
+            <p className="tiny">Switch to dyslexia-friendly font, high contrast, and offline-friendly caching.</p>
+          </div>
+          <div className="status-actions">
+            <button className="button secondary" onClick={() => setDyslexicFont((flag) => !flag)}>
+              {dyslexicFont ? 'Dyslexia font on' : 'Dyslexia font off'}
+            </button>
+            <button className="button secondary" onClick={() => setHighContrast((flag) => !flag)}>
+              {highContrast ? 'High contrast on' : 'High contrast off'}
+            </button>
+          </div>
+        </div>
+        <div className="status-chips" role="status" aria-label="Offline and voice status">
+          <span className="chip">{isOffline ? '📦 Offline cache ready' : '☁️ Online and syncing'}</span>
+          <span className="chip">{voiceSupported ? '🎙️ Voice-to-text ready' : '🎙️ Voice input unavailable'}</span>
+          <span className="chip">{speechSupported ? '🔊 Text-to-speech ready' : '🔊 Speaker unavailable'}</span>
+        </div>
+      </div>
+
       <div className="card" style={{ marginBottom: '1rem' }}>
         <div className="progress-wrap">
           <div>
@@ -234,6 +524,16 @@ export default function ExperienceSandbox() {
               {activeStep.id === 'brainstorm' && (
                 <div className="field">
                   <label htmlFor="brainstorm">Brainstorm notes (3 ideas)</label>
+                  {voiceSupported && (
+                    <button
+                      className="button secondary"
+                      style={{ width: '100%', marginBottom: '0.5rem' }}
+                      onClick={() => startVoiceInput('brainstorm')}
+                      aria-pressed={listeningField === 'brainstorm'}
+                    >
+                      {listeningField === 'brainstorm' ? 'Listening… tap to pause' : 'Use voice to add notes'}
+                    </button>
+                  )}
                   <textarea
                     id="brainstorm"
                     value={brainstorm}
@@ -247,6 +547,16 @@ export default function ExperienceSandbox() {
               {activeStep.id === 'write' && (
                 <div className="field">
                   <label htmlFor="draft">Write three sentences</label>
+                  {voiceSupported && (
+                    <button
+                      className="button secondary"
+                      style={{ width: '100%', marginBottom: '0.5rem' }}
+                      onClick={() => startVoiceInput('draft')}
+                      aria-pressed={listeningField === 'draft'}
+                    >
+                      {listeningField === 'draft' ? 'Listening… tap to pause' : 'Dictate this answer'}
+                    </button>
+                  )}
                   <textarea
                     id="draft"
                     value={draft}
@@ -260,6 +570,16 @@ export default function ExperienceSandbox() {
               {activeStep.id === 'revise' && (
                 <div className="field">
                   <label htmlFor="revision">What did you swap?</label>
+                  {voiceSupported && (
+                    <button
+                      className="button secondary"
+                      style={{ width: '100%', marginBottom: '0.5rem' }}
+                      onClick={() => startVoiceInput('revision')}
+                      aria-pressed={listeningField === 'revision'}
+                    >
+                      {listeningField === 'revision' ? 'Listening… tap to pause' : 'Dictate your revision'}
+                    </button>
+                  )}
                   <textarea
                     id="revision"
                     value={revision}
@@ -273,6 +593,16 @@ export default function ExperienceSandbox() {
               {activeStep.id === 'reflect' && (
                 <div className="field">
                   <label htmlFor="reflection">One thing you improved</label>
+                  {voiceSupported && (
+                    <button
+                      className="button secondary"
+                      style={{ width: '100%', marginBottom: '0.5rem' }}
+                      onClick={() => startVoiceInput('reflection')}
+                      aria-pressed={listeningField === 'reflection'}
+                    >
+                      {listeningField === 'reflection' ? 'Listening… tap to pause' : 'Speak your reflection'}
+                    </button>
+                  )}
                   <textarea
                     id="reflection"
                     value={reflection}
@@ -303,7 +633,13 @@ export default function ExperienceSandbox() {
                   {speakingId === 'scaffolds' ? '🔊…' : '🔊'}
                 </button>
               </div>
-              <button className="button secondary" onClick={() => setScaffoldsOpen((open) => !open)}>
+              <button
+                className="button secondary"
+                onClick={() => {
+                  setScaffoldsOpen((open) => !open);
+                  setAnalytics((current) => ({ ...current, hintOpens: current.hintOpens + 1 }));
+                }}
+              >
                 {scaffoldsOpen ? 'Hide scaffolds' : 'Show scaffolds'}
               </button>
               {scaffoldsOpen && (
@@ -372,16 +708,159 @@ export default function ExperienceSandbox() {
             </div>
           </div>
 
-          <div className="card">
-            <h3>Why this flow feels calm</h3>
-            <ul role="list" className="task-list">
-              <li>One decision per screen: pick, write, revise, reflect.</li>
-              <li>Instruction text stays under two short sentences.</li>
-              <li>Badges and progress stay visible without extra clicks.</li>
-            </ul>
+            <div className="card">
+              <h3>Why this flow feels calm</h3>
+              <ul role="list" className="task-list">
+                <li>One decision per screen: pick, write, revise, reflect.</li>
+                <li>Instruction text stays under two short sentences.</li>
+                <li>Badges and progress stay visible without extra clicks.</li>
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
+
+      <Section
+        title="Progress tracking dashboard"
+        subtitle="Local-first stats, parent-friendly sharing, and anonymous classroom insights"
+      >
+        <div className="card-grid">
+          <div className="card">
+            <h3>Progress snapshot</h3>
+            <ul role="list" className="task-list">
+              <li>Quests finished: {progressStats.questsCompleted}</li>
+              <li>Badges earned: {progressStats.badgesEarned}</li>
+              <li>Words written: {progressStats.wordsWritten}</li>
+              <li>Streak: {progressStats.streak} days</li>
+            </ul>
+            <p className="tiny">Stored in LocalStorage—no login needed.</p>
+          </div>
+
+          <div className="card">
+            <h3>Parent/teacher shareable report</h3>
+            <p className="small">Generate a one-click link that summarizes this device&apos;s progress.</p>
+            <button className="button" onClick={copyReport} style={{ width: '100%', marginBottom: '0.5rem' }}>
+              Copy share link
+            </button>
+            <p className="tiny">Link encodes only badges, streaks, and a favorite quest topic.</p>
+          </div>
+
+          <div className="card">
+            <h3>Anonymous analytics</h3>
+            <ul role="list" className="task-list">
+              <li>Micro-quests finished: {analytics.completions}</li>
+              <li>Scaffold opens: {analytics.hintOpens}</li>
+              <li>Voice notes used: {analytics.voiceNotes}</li>
+            </ul>
+            <p className="tiny">Designed for class-level trends without student names.</p>
+          </div>
+        </div>
+      </Section>
+
+      <Section
+        title="Quest packs, offline mode, and multimedia prompts"
+        subtitle="Pick a themed pack, cache it, draw or upload a visual, and keep going even without Wi‑Fi"
+      >
+        <div className="card-grid">
+          <div className="card">
+            <h3>Themed quest packs</h3>
+            <label className="small" htmlFor="pack-picker">
+              Choose a pack to cache for offline play
+            </label>
+            <select
+              id="pack-picker"
+              value={currentPack.id}
+              onChange={(event) => changePack(event.target.value)}
+              className="input"
+              style={{ width: '100%', marginBottom: '0.5rem' }}
+            >
+              {questPacks.map((pack) => (
+                <option key={pack.id} value={pack.id}>
+                  {pack.title} · {pack.theme}
+                </option>
+              ))}
+            </select>
+            <p className="small">Cached quests (offline safe):</p>
+            <ul role="list" className="task-list">
+              {cachedQuests.map((quest) => (
+                <li key={quest}>{quest}</li>
+              ))}
+            </ul>
+            <p className="tiny">Skills covered: {currentPack.skills.join(', ')}.</p>
+          </div>
+
+          <div className="card">
+            <h3>Multimedia & drawing prompt</h3>
+            <p className="small">Sketch an idea before writing, then save it to your gallery.</p>
+            <canvas
+              ref={canvasRef}
+              width={320}
+              height={220}
+              className="drawing-canvas"
+              onPointerDown={startDrawing}
+              onPointerMove={handleDraw}
+              onPointerUp={stopDrawing}
+              onPointerLeave={stopDrawing}
+              aria-label="Drawing canvas for story idea"
+            />
+            <div className="status-actions" style={{ marginTop: '0.5rem' }}>
+              <button className="button" onClick={saveDrawing}>
+                Save to gallery
+              </button>
+              <button className="button secondary" onClick={() => canvasRef.current?.getContext('2d')?.clearRect(0, 0, 320, 220)}>
+                Clear canvas
+              </button>
+            </div>
+            {gallery.length > 0 && (
+              <div style={{ marginTop: '0.75rem' }}>
+                <p className="tiny">Saved sketches (local-only):</p>
+                <div className="gallery-grid">
+                  {gallery.map((img, index) => (
+                    <img key={img} src={img} alt={`Sketch ${index + 1}`} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="card">
+            <h3>Gamification boost</h3>
+            <p className="small">Anonymous opt-in leaderboard and weekly challenge.</p>
+            <p className="tiny">Weekly challenge: Finish any 2 quests with a drawing attached.</p>
+            <ul role="list" className="task-list">
+              {leaderboard.map((row) => (
+                <li key={row.codename}>
+                  {row.codename} — {row.completions} completions · {row.streak}-day streak
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="card">
+            <h3>User-generated quest suggestions</h3>
+            <p className="small">Send a new idea. We keep the latest five for teacher review.</p>
+            <label className="tiny" htmlFor="suggestion">
+              Suggest a quest
+            </label>
+            <textarea
+              id="suggestion"
+              value={suggestion}
+              onChange={(event) => setSuggestion(event.target.value)}
+              rows={3}
+              placeholder="Example: A shy dragon writes a kind note…"
+            />
+            <button className="button" onClick={submitSuggestion} style={{ width: '100%', marginTop: '0.5rem' }}>
+              Submit for moderation
+            </button>
+            {suggestionLog.length > 0 && (
+              <ul role="list" className="task-list" style={{ marginTop: '0.5rem' }}>
+                {suggestionLog.map((item, index) => (
+                  <li key={`${item}-${index}`}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </Section>
     </div>
   );
 }
