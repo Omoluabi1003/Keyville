@@ -8,6 +8,7 @@ export type RouteConfig = {
 export const routes: RouteConfig[] = [
   { href: '/', label: 'Home' },
   { href: '/experience', label: 'Play a Quest' },
+  { href: '/adults', label: 'For Teachers & Parents' },
   { href: '/students', label: 'Study Tips' },
   { href: '/storycraft', label: 'Storycraft' },
   { href: '/platform', label: 'Platform' }
