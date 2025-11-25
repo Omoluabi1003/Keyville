@@ -105,7 +105,7 @@ export default function StorycraftPage() {
         <div className="card-grid">
           <div className="card">
             <h3>Try-again prompts</h3>
-            <p className="small">"Nice start! Now add one interesting detail…" messages model the next move in a few words.</p>
+            <p className="small">&quot;Nice start! Now add one interesting detail…&quot; messages model the next move in a few words.</p>
           </div>
           <div className="card">
             <h3>Quick hints</h3>
@@ -170,7 +170,7 @@ export default function StorycraftPage() {
         <div className="card-grid">
           <div className="card">
             <h3>Parent and guardian view</h3>
-            <p className="small">Weekly snapshots show "what your kids did this week" with highlights and talking points.</p>
+            <p className="small">Weekly snapshots show &quot;what your kids did this week&quot; with highlights and talking points.</p>
           </div>
           <div className="card">
             <h3>Teacher dashboard</h3>
