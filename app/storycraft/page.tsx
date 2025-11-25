@@ -102,6 +102,13 @@ export default function StorycraftPage() {
             <p className="small">Badges and streaks celebrate consistency; no ranking or comparison.</p>
           </div>
           <div className="card">
+            <h3>Calm progress tracker</h3>
+            <p className="small">
+              A visible quest progress bar and streak meter show momentum without grades, encouraging retries with
+              unlimited hints.
+            </p>
+          </div>
+          <div className="card">
             <h3>Avatar customization</h3>
             <p className="small">Earn cosmetic unlocks for finishing quests and boss challenges.</p>
           </div>
