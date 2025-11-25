@@ -67,6 +67,26 @@ export default function StorycraftPage() {
         </div>
       </Section>
 
+      <Section
+        title="Accessibility and readability"
+        subtitle="Keep every quest comfortable for younger readers with varied strengths"
+      >
+        <div className="card-grid">
+          <div className="card">
+            <h3>Flexible text controls</h3>
+            <p className="small">Teachers and students can bump font size, spacing, and contrast without leaving the flow.</p>
+          </div>
+          <div className="card">
+            <h3>Navigation that waits</h3>
+            <p className="small">Timers and prompts respect slower reading speeds with generous default durations.</p>
+          </div>
+          <div className="card">
+            <h3>Read-aloud and speak-hint</h3>
+            <p className="small">Optional narration and whispered hints provide auditory reinforcement when focus drifts.</p>
+          </div>
+        </div>
+      </Section>
+
       <Section title="AI tone coaching">
         <div className="card">
           <p>Coaching stays within rubric-aligned tone: supportive, specific, and classroom-safe.</p>
@@ -75,6 +95,26 @@ export default function StorycraftPage() {
             <li>Points to concrete next steps instead of vague praise</li>
             <li>Never collects PII; runs with demo data in the sandbox</li>
           </ul>
+        </div>
+      </Section>
+
+      <Section
+        title="Revision flow"
+        subtitle="Friendly nudges keep students iterating without feeling stuck"
+      >
+        <div className="card-grid">
+          <div className="card">
+            <h3>Try-again prompts</h3>
+            <p className="small">"Nice start! Now add one interesting detail…" messages model the next move in a few words.</p>
+          </div>
+          <div className="card">
+            <h3>Quick hints</h3>
+            <p className="small">Tap for bite-sized hints that appear inline, then celebrate small wins with soft confetti.</p>
+          </div>
+          <div className="card">
+            <h3>One-click retry</h3>
+            <p className="small">Students can re-open their draft with edits pre-highlighted to keep momentum going.</p>
+          </div>
         </div>
       </Section>
 
@@ -115,6 +155,51 @@ export default function StorycraftPage() {
           <div className="card">
             <h3>Return path reminders</h3>
             <p className="small">Subtle notifications guide students back to their current world and tier.</p>
+          </div>
+          <div className="card">
+            <h3>Missions and unlocks</h3>
+            <p className="small">Optional side quests appear after streaks to build momentum without cluttering the map.</p>
+          </div>
+        </div>
+      </Section>
+
+      <Section
+        title="Teacher and family connection"
+        subtitle="Share progress simply with the adults who help students grow"
+      >
+        <div className="card-grid">
+          <div className="card">
+            <h3>Parent and guardian view</h3>
+            <p className="small">Weekly snapshots show "what your kids did this week" with highlights and talking points.</p>
+          </div>
+          <div className="card">
+            <h3>Teacher dashboard</h3>
+            <p className="small">Lightweight class tracker with printable reports to encourage adoption without setup.</p>
+          </div>
+          <div className="card">
+            <h3>Share with your teacher</h3>
+            <p className="small">Existing share flows stay one click away so feedback loops remain quick.</p>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Forward-thinking roadmap" subtitle="Thoughtful expansion that keeps writing first">
+        <div className="card-grid">
+          <div className="card">
+            <h3>Adaptive difficulty</h3>
+            <p className="small">Prompt rigor steps up naturally after a student completes a few easy quests.</p>
+          </div>
+          <div className="card">
+            <h3>Peer boosts</h3>
+            <p className="small">Teacher-moderated sharing lets students post a favorite line to encourage each other.</p>
+          </div>
+          <div className="card">
+            <h3>School workflow ready</h3>
+            <p className="small">Exports to LMS/SIS keep assignments and completion data flowing to existing systems.</p>
+          </div>
+          <div className="card">
+            <h3>Mobile and offline friendly</h3>
+            <p className="small">Optimized for tablets with low-latency controls and optional offline quest downloads.</p>
           </div>
         </div>
       </Section>
