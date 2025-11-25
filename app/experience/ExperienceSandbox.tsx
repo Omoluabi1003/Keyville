@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import CTAButton from '../../components/CTAButton';
 import Section from '../../components/Section';
 import { sandboxChallenge } from '../../lib/navigation';
@@ -53,32 +53,96 @@ export const rooms = [
   }
 ];
 
-const vocabulary = [
-  {
-    word: 'Inference',
-    prompt: 'Using clues to figure out what is not said directly.',
-    choices: ['Prediction', 'Guess with evidence', 'Random idea'],
-    correct: 'Guess with evidence'
-  },
-  {
-    word: 'Sequence',
-    prompt: 'Putting events or steps in the right order.',
-    choices: ['Mixing everything', 'Exact timing', 'Story steps'],
-    correct: 'Story steps'
-  },
-  {
-    word: 'Context',
-    prompt: 'Words around a clue that help you understand it.',
-    choices: ['Random detail', 'Helpful surroundings', 'Unrelated fact'],
-    correct: 'Helpful surroundings'
-  },
-  {
-    word: 'Audience',
-    prompt: 'The person you are writing for.',
-    choices: ['A crowd of strangers', 'Who reads or hears it', 'The loudest voice'],
-    correct: 'Who reads or hears it'
-  }
-];
+type VocabularyItem = { word: string; prompt: string; choices: string[]; correct: string };
+
+const vocabularyByRoom: Record<string, VocabularyItem[]> = {
+  files: [
+    {
+      word: 'Inference',
+      prompt: 'Using clues to figure out what is not said directly.',
+      choices: ['Prediction', 'Guess with evidence', 'Random idea'],
+      correct: 'Guess with evidence'
+    },
+    {
+      word: 'Sequence',
+      prompt: 'Putting events or steps in the right order.',
+      choices: ['Mixing everything', 'Exact timing', 'Story steps'],
+      correct: 'Story steps'
+    },
+    {
+      word: 'Context',
+      prompt: 'Words around a clue that help you understand it.',
+      choices: ['Random detail', 'Helpful surroundings', 'Unrelated fact'],
+      correct: 'Helpful surroundings'
+    },
+    {
+      word: 'Audience',
+      prompt: 'The person you are writing for.',
+      choices: ['A crowd of strangers', 'Who reads or hears it', 'The loudest voice'],
+      correct: 'Who reads or hears it'
+    }
+  ],
+  radio: [
+    {
+      word: 'Transition',
+      prompt: 'A word that guides listeners from one idea to the next.',
+      choices: ['Cliffhanger', 'Signal word', 'Random sound'],
+      correct: 'Signal word'
+    },
+    {
+      word: 'Tempo',
+      prompt: 'The speed of the sequence or pacing in the message.',
+      choices: ['Very slow', 'Rhythm of events', 'Off-topic detail'],
+      correct: 'Rhythm of events'
+    },
+    {
+      word: 'Hook',
+      prompt: 'An opener that grabs attention right away.',
+      choices: ['Last sentence', 'Question at the end', 'Catchy start'],
+      correct: 'Catchy start'
+    }
+  ],
+  press: [
+    {
+      word: 'Claim',
+      prompt: 'The main point a speaker wants the audience to believe.',
+      choices: ['Side comment', 'Main assertion', 'Sound effect'],
+      correct: 'Main assertion'
+    },
+    {
+      word: 'Evidence',
+      prompt: 'Facts or quotes that support the claim.',
+      choices: ['Unrelated fact', 'Support with proof', 'Vague feeling'],
+      correct: 'Support with proof'
+    },
+    {
+      word: 'Tone',
+      prompt: 'The attitude or feeling in the speaker’s voice.',
+      choices: ['Font style', 'How it feels', 'Exact date'],
+      correct: 'How it feels'
+    }
+  ],
+  mail: [
+    {
+      word: 'Salutation',
+      prompt: 'A greeting that fits the audience and purpose.',
+      choices: ['Random emoji', 'Hello that fits', 'Signature'],
+      correct: 'Hello that fits'
+    },
+    {
+      word: 'Call to action',
+      prompt: 'A clear next step for the reader.',
+      choices: ['Hidden request', 'Vague wish', 'Specific ask'],
+      correct: 'Specific ask'
+    },
+    {
+      word: 'Sign-off',
+      prompt: 'The closing line that matches the tone.',
+      choices: ['Tone-checked goodbye', 'Unrelated quote', 'Email address'],
+      correct: 'Tone-checked goodbye'
+    }
+  ]
+};
 
 export const scaffoldSteps = [
   {
@@ -236,6 +300,7 @@ export default function ExperienceSandbox() {
   const [revisionCompleted, setRevisionCompleted] = useState(defaultProgressState.revisionCompleted);
   const [reflectionCompleted, setReflectionCompleted] = useState(defaultProgressState.reflectionCompleted);
   const [vocabAnswers, setVocabAnswers] = useState<Record<string, string>>({});
+  const [vocabSubmissionMessage, setVocabSubmissionMessage] = useState('');
   const [scaffoldingEnabled, setScaffoldingEnabled] = useState(true);
   const [skipForAdvanced, setSkipForAdvanced] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -251,6 +316,9 @@ export default function ExperienceSandbox() {
   );
 
   const systemCompletedRooms = useMemo(() => completedRooms, [completedRooms]);
+
+  const activeRoom = rooms[currentRoomIndex];
+  const activeVocabulary = activeRoom ? vocabularyByRoom[activeRoom.id] ?? [] : [];
 
   const currentWriterLevel = useMemo(() => {
     if (progressLevel >= rooms.length) return writerLevels[2];
@@ -359,11 +427,16 @@ export default function ExperienceSandbox() {
     );
   }, [activeTeacherPlan.schedulePreset, activeTeacherPlan.difficultyTier]);
 
+  useEffect(() => {
+    setVocabAnswers({});
+    setVocabSubmissionMessage('');
+  }, [currentRoomIndex]);
+
   const addBadge = (badgeToAdd: EarnedBadge) => {
     setEarnedBadges((prev) => ensureBadge(prev, badgeToAdd));
   };
 
-  const completeCurrentRoom = () => {
+  const completeCurrentRoom = useCallback(() => {
     const nextState = completeRoomProgress({
       currentRoomIndex,
       progressLevel,
@@ -375,7 +448,7 @@ export default function ExperienceSandbox() {
     setCompletedRooms(nextState.completedRooms);
     setProgressLevel(nextState.progressLevel);
     setCurrentRoomIndex(nextState.currentRoomIndex);
-  };
+  }, [completedRooms, currentRoomIndex, earnedBadges, progressLevel]);
 
   const goToRoom = (roomIndex: number) => {
     setCurrentRoomIndex(roomIndex);
@@ -400,6 +473,10 @@ export default function ExperienceSandbox() {
     };
   });
 
+  const allVocabularyAnswered = activeVocabulary.every((item) => vocabAnswers[item.word]);
+  const correctVocabulary = activeVocabulary.filter((item) => vocabAnswers[item.word] === item.correct).length;
+  const allVocabularyCorrect = activeVocabulary.length > 0 && correctVocabulary === activeVocabulary.length;
+
   const handleRevision = () => {
     if (revisionCompleted) return;
     setRevisionCompleted(true);
@@ -415,6 +492,31 @@ export default function ExperienceSandbox() {
       detail: 'You noticed what changed and why it mattered.'
     });
   };
+
+  const handleSubmitVocabulary = useCallback(
+    (autoAdvance = false) => {
+      if (!activeRoom || activeVocabulary.length === 0) return;
+
+      const submissionPrefix = `Submitted answers for ${activeRoom.title}.`;
+
+      if (allVocabularyCorrect) {
+        setVocabSubmissionMessage(
+          `${submissionPrefix} ${autoAdvance ? 'Moving to next room now.' : 'Room marked ready to advance.'}`
+        );
+
+        if (!completedRooms.includes(activeRoom.id)) {
+          completeCurrentRoom();
+        }
+      } else if (allVocabularyAnswered) {
+        setVocabSubmissionMessage(
+          `${submissionPrefix} One or more matches need a tweak to unlock the door.`
+        );
+      } else {
+        setVocabSubmissionMessage('Answer every prompt before submitting to move forward.');
+      }
+    },
+    [activeRoom, activeVocabulary.length, allVocabularyAnswered, allVocabularyCorrect, completedRooms, completeCurrentRoom]
+  );
 
   const speakStep = (stepId: string, text: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -434,7 +536,12 @@ export default function ExperienceSandbox() {
     synth.speak(utterance);
   };
 
-  const correctVocabulary = vocabulary.filter((item) => vocabAnswers[item.word] === item.correct).length;
+  useEffect(() => {
+    if (!allVocabularyCorrect || !activeRoom) return;
+    if (completedRooms.includes(activeRoom.id)) return;
+
+    handleSubmitVocabulary(true);
+  }, [activeRoom, allVocabularyCorrect, completedRooms, handleSubmitVocabulary]);
 
   return (
     <div className="escape-shell">
@@ -710,7 +817,7 @@ export default function ExperienceSandbox() {
           <Section title="Vocabulary vault" subtitle="Match each word to the right idea">
             <div className="card">
               <div className="vault-grid">
-                {vocabulary.map((item) => (
+                {activeVocabulary.map((item) => (
                   <div key={item.word} className="vault-row">
                     <div>
                       <p className="small">{item.word}</p>
@@ -737,10 +844,30 @@ export default function ExperienceSandbox() {
                 ))}
               </div>
               <p className="small" aria-live="polite">
-                {correctVocabulary === vocabulary.length
+                {allVocabularyCorrect
                   ? 'Vault unlocked! Every word is matched.'
-                  : `${correctVocabulary} of ${vocabulary.length} matches feel solid.`}
+                  : `${correctVocabulary} of ${activeVocabulary.length} matches feel solid.`}
               </p>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  alignItems: 'flex-start'
+                }}
+              >
+                <button
+                  className="button"
+                  onClick={() => handleSubmitVocabulary(false)}
+                  disabled={!allVocabularyAnswered}
+                >
+                  Submit answers
+                </button>
+                <p className="small" aria-live="polite">
+                  {vocabSubmissionMessage ||
+                    'Submit to lock in your matches. All correct answers will auto-advance you to the next room.'}
+                </p>
+              </div>
             </div>
           </Section>
         </div>
