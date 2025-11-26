@@ -1232,9 +1232,7 @@ input {
 }
 
 .scaffold-grid--hidden {
-  opacity: 0.55;
-  filter: saturate(0.4);
-  pointer-events: none;
+  display: none;
 }
 
 .scaffold-card {
