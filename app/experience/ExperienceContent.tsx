@@ -129,6 +129,15 @@ export default function ExperienceContent() {
     setToastMessage(visible ? 'Scaffolds are on.' : 'Scaffolds are hidden.');
   };
 
+  const handleSpeak = (text: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      setToastMessage('Sorry, your browser does not support text-to-speech.');
+    }
+  };
+
   return (
     <div className="experience-page">
       <section className="experience-hero">
@@ -279,7 +288,14 @@ export default function ExperienceContent() {
                       {quest.description}
                     </p>
                   </div>
-                  <button className="speaker" aria-label={`Read ${quest.title} description aloud`}>
+                  <button
+                    className="speaker"
+                    aria-label={`Read ${quest.title} description aloud`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSpeak(quest.description);
+                    }}
+                  >
                     🔈
                   </button>
                 </div>
@@ -320,7 +336,11 @@ export default function ExperienceContent() {
           <div className="card scaffold-card">
             <div className="scaffold-card__header">
               <h3>Word bank</h3>
-              <button className="speaker" aria-label="Read word bank aloud">
+              <button
+                className="speaker"
+                aria-label="Read word bank aloud"
+                onClick={() => handleSpeak(wordBank.join(', '))}
+              >
                 🔈
               </button>
             </div>
@@ -335,7 +355,11 @@ export default function ExperienceContent() {
           <div className="card scaffold-card">
             <div className="scaffold-card__header">
               <h3>Sentence starters</h3>
-              <button className="speaker" aria-label="Read sentence starters aloud">
+              <button
+                className="speaker"
+                aria-label="Read sentence starters aloud"
+                onClick={() => handleSpeak(sentenceStarters.join(', '))}
+              >
                 🔈
               </button>
             </div>
@@ -356,7 +380,7 @@ export default function ExperienceContent() {
           <div className="card scaffold-card">
             <div className="scaffold-card__header">
               <h3>Example answer</h3>
-              <button className="speaker" aria-label="Read example answer aloud">
+              <button className="speaker" aria-label="Read example answer aloud" onClick={() => handleSpeak(answerText)}>
                 🔈
               </button>
             </div>
@@ -396,7 +420,7 @@ export default function ExperienceContent() {
           Every main instruction and scaffold has a small speaker icon. Tap the icon on a computer or mobile PWA to hear the text
           read out loud.
         </p>
-        <button className="button button--ghost" type="button">
+        <button className="button button--ghost" type="button" onClick={() => handleSpeak('Tap to hear a sample line.')}>
           🔈 Tap to hear a sample line
         </button>
       </Section>
