@@ -30,7 +30,7 @@ describe('ExperienceSandbox teacher settings', () => {
 
     const guardrail = await screen.findByText(/Scaffold depth:/);
     expect(guardrail.textContent).toContain('Scaffold depth:');
-    expect(guardrail.textContent).toContain('age-appropriate');
+    expect(guardrail.textContent).toContain('challenge');
 
     const prompt = await screen.findByText(/Free write day:/);
     expect(prompt.textContent).toContain('Free write day:');

@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from 'react';
+import { sentenceCompletionEnhancements } from '../../lib/sentence-completion-enhancements';
 import Section from '../../components/Section';
+import AutoSuggest from '../../components/AutoSuggest';
+import SentenceBuilder from '../../components/SentenceBuilder';
+import AICompletion from '../../components/AICompletion';
+import { FeatureToggle } from '../../components/FeatureToggle';
 
 const heroSteps = [
   'Pick a quest that looks fun.',
@@ -104,6 +109,16 @@ export default function ExperienceContent() {
     'The radio hummed while I sent a brave whisper about the hidden clue, and I felt proud of my calm move.'
   );
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const [enableAutoSuggest, setEnableAutoSuggest] = useState(
+    sentenceCompletionEnhancements.features.find((f) => f.id === 'autoSuggest')?.defaultEnabled ?? false
+  );
+  const [enableSentenceBuilder, setEnableSentenceBuilder] = useState(
+    sentenceCompletionEnhancements.features.find((f) => f.id === 'sentenceBuilder')?.defaultEnabled ?? false
+  );
+  const [enableAICompletion, setEnableAICompletion] = useState(
+    sentenceCompletionEnhancements.features.find((f) => f.id === 'aiCompletion')?.defaultEnabled ?? false
+  );
 
   const progressWidth = useMemo(() => (selectedQuest ? (isQuestLocked ? '60%' : '40%') : '20%'), [selectedQuest, isQuestLocked]);
 
@@ -332,6 +347,23 @@ export default function ExperienceContent() {
             Hide scaffolds
           </button>
         </div>
+        <div className="scaffold-row">
+          <FeatureToggle
+            label={sentenceCompletionEnhancements.comfortToggleIntegration.autoSuggest}
+            enabled={enableAutoSuggest}
+            onToggle={() => setEnableAutoSuggest((prev) => !prev)}
+          />
+          <FeatureToggle
+            label={sentenceCompletionEnhancements.comfortToggleIntegration.sentenceBuilder}
+            enabled={enableSentenceBuilder}
+            onToggle={() => setEnableSentenceBuilder((prev) => !prev)}
+          />
+          <FeatureToggle
+            label={sentenceCompletionEnhancements.comfortToggleIntegration.aiCompletion}
+            enabled={enableAICompletion}
+            onToggle={() => setEnableAICompletion((prev) => !prev)}
+          />
+        </div>
         <div className={`scaffold-grid ${scaffoldsVisible ? '' : 'scaffold-grid--hidden'}`}>
           <div className="card scaffold-card">
             <div className="scaffold-card__header">
@@ -395,6 +427,9 @@ export default function ExperienceContent() {
         <p className="tiny" style={{ marginTop: '0.35rem' }}>
           Tap a pill to insert a word or starter. A tiny toast confirms what you added.
         </p>
+        {enableAutoSuggest && <AutoSuggest />}
+        {enableSentenceBuilder && <SentenceBuilder />}
+        {enableAICompletion && <AICompletion />}
       </Section>
 
       <Section title="Days practiced this week" subtitle="Practice streak with gentle glow." id="streak">
