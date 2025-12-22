@@ -11,6 +11,7 @@ export const routes: RouteConfig[] = [
   { href: '/adults', label: 'For Teachers & Parents' },
   { href: '/students', label: 'Study Tips' },
   { href: '/storycraft', label: 'Storycraft' },
+  { href: '/math-science', label: 'Math & Science' },
   { href: '/platform', label: 'Platform' }
 ];
 
