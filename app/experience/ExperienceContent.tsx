@@ -83,6 +83,21 @@ const questCards = [
     title: 'Kind note',
     description: 'Write a kind message that could make someone smile today.',
     icon: '💌'
+  },
+  {
+    title: 'Math puzzle run',
+    description: 'Explain a mental-math strategy or estimation step before you solve.',
+    icon: '🧮'
+  },
+  {
+    title: 'Science observation',
+    description: 'Describe what changed in a quick demo and note one variable.',
+    icon: '🔬'
+  },
+  {
+    title: 'Data storyteller',
+    description: 'Turn a small chart into two sentences that compare the numbers.',
+    icon: '📊'
   }
 ];
 
@@ -260,23 +275,17 @@ export default function ExperienceContent() {
                 Choose your quest
               </p>
               <p className="small" style={{ margin: 0 }}>
-                You only need one pick to begin. Choose one topic that sounds fun and friendly.
+                You only need one pick to begin. Choose one topic that sounds fun and friendly, including math and science opti
+                ons.
               </p>
             </div>
             <div className="quest-grid" role="list">
               {questCards.map((quest) => (
-                <div
+                <button
                   className={`quest ${selectedQuest === quest.title ? 'quest--selected' : ''}`}
-                  role="button"
                   key={quest.title}
-                  tabIndex={0}
+                  type="button"
                   onClick={() => handleQuestClick(quest.title)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      handleQuestClick(quest.title);
-                    }
-                  }}
                   aria-pressed={selectedQuest === quest.title}
                 >
                   <div className="quest__icon" aria-hidden>
@@ -298,7 +307,7 @@ export default function ExperienceContent() {
                   >
                     🔈
                   </button>
-                </div>
+                </button>
               ))}
             </div>
           </div>
