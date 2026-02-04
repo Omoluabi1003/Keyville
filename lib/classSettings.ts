@@ -1,34 +1,29 @@
-import { kidThemes } from './kidThemes';
+export const teacherStorageKey = 'kv-teacher-plan';
 
-export const classSections = ['Period 1 · Advisory', 'Period 2 · ELA', 'After-school writing club'];
+export const classSections = ['Period 1 · ELA', 'Period 2 · ELA', 'Period 3 · ELA', 'Period 4 · SS'];
+export const difficultyLabels: Record<DifficultyTier, string> = {
+  foundational: 'Foundational',
+  standard: 'Standard',
+  challenge: 'Challenge'
+};
+export const scheduleLabels: Record<SchedulePreset, string> = {
+  default: 'Default',
+  'mixed-mode': 'Mixed Mode',
+  'free-write-day': 'Free Write Day'
+};
+export const tierPromptAdds: Record<DifficultyTier, string> = {
+  foundational: 'Focus on clear, simple sentences.',
+  standard: 'Add one sensory detail.',
+  challenge: 'Use a metaphor or simile.'
+};
+export const schedulePromptAdds: Record<SchedulePreset, string> = {
+  default: '',
+  'mixed-mode': 'Include one sentence of choice at the end.',
+  'free-write-day': 'Write freely on this topic for 5 minutes.'
+};
 
 export type DifficultyTier = 'foundational' | 'standard' | 'challenge';
-export type SchedulePreset = 'challenge-day' | 'free-write-day' | 'mixed-mode';
-
-export const difficultyLabels: Record<DifficultyTier, string> = {
-  foundational: 'Foundational (short prompts, extra scaffolds)',
-  standard: 'On-level (balanced prompts + scaffolds)',
-  challenge: 'Challenge (richer prompts, tighter scaffolds)'
-};
-
-export const scheduleLabels: Record<SchedulePreset, string> = {
-  'challenge-day': 'Challenge day',
-  'free-write-day': 'Free write day',
-  'mixed-mode': 'Mixed mode'
-};
-
-export const tierPromptAdds: Record<DifficultyTier, string> = {
-  foundational: 'Keep it short and add one feeling word.',
-  standard: 'Include one vivid detail and a transition word.',
-  challenge: 'Add a counter-move the antagonist plans and foreshadow one consequence.'
-};
-
-export const schedulePromptAdds: Record<SchedulePreset, string> = {
-  'challenge-day': 'This is a timed “challenge day,” so add a new twist in two sentences.',
-  'free-write-day': 'Free write day: let them choose the format but keep the antagonist voice.',
-  'mixed-mode': 'Mixed mode: include one sentence of choice at the end.'
-};
-
+export type SchedulePreset = 'default' | 'mixed-mode' | 'free-write-day';
 export type TeacherClassSetting = {
   kidModeEnabled: boolean;
   selectedThemeId: string;
@@ -38,11 +33,9 @@ export type TeacherClassSetting = {
 };
 
 export const defaultTeacherClassSetting = (): TeacherClassSetting => ({
-  kidModeEnabled: true,
-  selectedThemeId: kidThemes[0]?.id ?? '',
+  kidModeEnabled: false,
+  selectedThemeId: 'fantasy',
   promptIndex: 0,
   difficultyTier: 'standard',
-  schedulePreset: 'mixed-mode'
+  schedulePreset: 'default'
 });
-
-export const teacherStorageKey = 'keyville-teacher-class-settings';

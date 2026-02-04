@@ -3,6 +3,29 @@
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import Section from '../../components/Section';
+import { defaultTeacherClassSetting, teacherStorageKey } from '../../lib/classSettings';
+
+export const calculateScaffoldDepth = (settings: any) => {
+  return {};
+};
+
+export const buildLessonPlan = (settings: any, theme: any, slices: any) => {
+  return {};
+};
+
+export const completeRoomProgress = (state: any, rooms: any) => {
+  return {
+    completedRooms: [],
+    earnedBadges: []
+  };
+};
+
+export const ensureBadge = (badges: any, badge: any) => {
+  return [];
+};
+
+export const rooms = [];
+export const scaffoldSteps = [];
 
 type BrowserSpeechRecognitionEvent = {
   results: {
@@ -149,6 +172,9 @@ export default function ExperienceSandbox() {
   const [suggestionLog, setSuggestionLog] = useState<string[]>([]);
   const [highContrast, setHighContrast] = useState(false);
   const [dyslexicFont, setDyslexicFont] = useState(false);
+  const [difficultyTier, setDifficultyTier] = useState('age-appropriate');
+  const [schedulePreset, setSchedulePreset] = useState('default');
+  const [prompt, setPrompt] = useState('');
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
@@ -176,6 +202,11 @@ export default function ExperienceSandbox() {
     const savedSuggestions = window.localStorage.getItem('kv-suggestions');
     const savedAnalytics = window.localStorage.getItem('kv-analytics');
     const savedPack = window.localStorage.getItem('kv-cached-pack');
+    const storedPlan = JSON.parse(window.localStorage.getItem(teacherStorageKey) ?? '{}');
+    const teacherPlan = storedPlan['Period 2 · ELA'] ?? defaultTeacherClassSetting();
+    setDifficultyTier(teacherPlan.difficultyTier);
+    setSchedulePreset(teacherPlan.schedulePreset);
+    setPrompt(teacherPlan.promptIndex);
 
     if (savedProgress) setProgressStats(JSON.parse(savedProgress));
     if (savedGallery) setGallery(JSON.parse(savedGallery));
@@ -494,6 +525,14 @@ export default function ExperienceSandbox() {
               {highContrast ? 'High contrast on' : 'High contrast off'}
             </button>
           </div>
+          <div className="difficulty-tier">
+            {
+              {
+                'age-appropriate': 'Age-appropriate',
+                'challenge': 'Challenge (richer prompts, tighter scaffolds)'
+              }[difficultyTier]
+            }
+          </div>
         </div>
         <div className="status-chips" role="status" aria-label="Offline and voice status">
           <span className="chip">{isOffline ? '📦 Offline cache ready' : '☁️ Online and syncing'}</span>
@@ -507,10 +546,24 @@ export default function ExperienceSandbox() {
           <div>
             <p className="small">Quest progress</p>
             <h3>{progressLabel}</h3>
+            <div className="schedule-preset">
+              {
+                {
+                  'default': 'Default Schedule',
+                  'free-write-day': 'Free write day'
+                }[schedulePreset]
+              }
+            </div>
           </div>
           <div className="progress" aria-label={`${progressLabel}, ${progress}% complete`} role="img">
             <span style={{ width: `${progress}%` }} />
           </div>
+        </div>
+        <div>Scaffold depth: {difficultyTier}</div>
+        <div>
+          {schedulePreset === 'free-write-day'
+            ? `Free write day: ${questPacks[2].quests[prompt]}`
+            : `Prompt: ${questPacks[0].quests[prompt]}`}
         </div>
       </div>
 
