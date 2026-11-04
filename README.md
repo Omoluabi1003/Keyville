@@ -1,5 +1,19 @@
 # Keyville by ETL GIS Consulting LLC
 
+## Project at a glance
+
+**Category:** Writing education and classroom rotation platform  
+**Purpose:** Demonstrate student writing practice, teacher workflows and district-oriented adoption  
+**Intended readers:** Users, developers and project evaluators  
+**Repository:** https://github.com/Omoluabi1003/Keyville
+
+**Implementation boundary:** Sandbox experience is demonstrative and does not establish production district authentication or student record handling.
+
+The following sections provide the existing development and product details. Confirm live capabilities in source and deployed environments before treating roadmap items as delivered.
+
+---
+
+
 Multi-page Next.js web app for Keyville, delivered by ETL GIS Consulting LLC to showcase room-rotation writing practice, teacher workflows, and district readiness.
 
 ## Getting started
